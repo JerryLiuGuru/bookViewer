@@ -116,36 +116,10 @@ var cover = document.getElementById("cover"),
 var pshft = 2, zindv = 0, ashft = 1;
 var td_normal = 0.6, td_short = 0.001;
 var mf = 1.1;   //A good value to display like turning a page.
-var spineC = document.getElementById("spine").getBoundingClientRect();
-var bvC = document.getElementById("bookViewer").getBoundingClientRect();
-function book_click(event) {    
+function book_click() {    
     // debugger
-    var x = event.clientX;     // Get the horizontal coordinate
-    var y = event.clientY;     // Get the vertical coordinate
-    var isOnLeft, isOnRight;
-    
-    isTrue = (y > (spineC.top)) && (y < (spineC.top+bvC.height));
-    isOnLeft =  ( isTrue && (x > (spineC.left-bvC.width)) && (x < (spineC.left)) );
-    isOnRight = ( isTrue && (x > (spineC.left)) && (x < (spineC.left+bvC.width)) );
-    
-    pgInd =  (pgInd < 0) ? 0 : pgInd;
-    pgInd =  (pgInd >= pgCnt) ? (pgCnt-1) : pgInd;
 
-    if ( isOnLeft ) {
-        if (pgInd != (pgCnt-1)) {            
-            pgInd -= ( ((pgInd%2)==0)?1:0 );   
-        }
-        pshft = - Math.abs(pshft);
-    }
-    if ( isOnRight ) {
-        if (pgInd != 0) {
-            pgInd += (pgInd % 2);    
-        }
-        pshft = Math.abs(pshft);
-    }
-    $("#pgCntNum").innerHTML = "pgCnt: " + pgCnt;
-
-    /*if ( (pgInd == 0) && (this.className == "hardcover_front") ) {
+    if ( (pgInd == 0) && (this.className == "hardcover_front") ) {
         pshft = Math.abs(pshft);
     }
     if ( (pgInd == (pgCnt-1)) && (this.className == "page") ) {
@@ -156,12 +130,10 @@ function book_click(event) {
         pgInd = pgCnt-1;    //A trick to show imgs reversely from the last one.
         pshft = -Math.abs(pshft);
         return; // Trick for clicking the last img of back: click event will trigger again? Don't know why.
-    }*/
+    }
     // Todo: handle if the click is on left or right page.
     // if (click on left), then modify pgInd.
     // Ensure from the image index in bimgNameArray, or from the position of the book area.
-    
-    
     var rDeg0 = -1, rDeg1 = -1, rDeg2 = -1, rDeg3 = -1, 
         tranZv1 = -8, tranZv2 = 8, tZv = -1, tZv2 = -1,
         n2slot = null, n2slot = null;        
@@ -190,8 +162,8 @@ function book_click(event) {
                 tv = tv.substring(0, tv.indexOf("translateZ")+11) + tZv2 + "px)";
                 pl[0].style["-webkit-transform"] = tv;
                 
-                /*pgInd = -2;
-                pshft = 2;  // Trick for auto-traversal.*/
+                pgInd = -2;
+                pshft = 2;
                 break; 
             default:
                 alert("Imp pgInd: " + pgInd);
@@ -223,8 +195,8 @@ function book_click(event) {
                 
                 pages.removeEventListener("click",book_click);
 
-                /*pgInd = 17;
-                pshft = -2; // Trick for auto-traversal.*/
+                pgInd = 17;
+                pshft = -2;
                 break;
             case (tpgCnt-1):
                 rDeg1 = minDeg;
@@ -319,7 +291,13 @@ function book_click(event) {
                 break;
             default:
                 alert("Err pgInd: " + pgInd);
-        } 
+        }
+        if (bsInd3 != -1) {
+            //pl[bsInd3].style.visibility = "hidden";
+            pl[bsInd3].style["transition-duration"] = "0.0001s";
+            pl[bsInd3].style["transform"] = "rotateY(" + rDeg2 + "deg) translateZ(0px)";
+            //pl[bsInd3].style.visibility = "visible";          
+        }
 
         pp[bsInd1].src = next1;
         if (n2slot == null) {
@@ -347,13 +325,6 @@ function book_click(event) {
             tv = prev1.style["transform"];
             tv = tv.substring(0, tv.indexOf("translateZ")+11) + "0)"; 
             prev1.style["transform"] = tv;
-        }
-        
-        if (bsInd3 != -1) {
-            //pl[bsInd3].style.visibility = "hidden";
-            pl[bsInd3].style["transition-duration"] = "0.0001s";
-            pl[bsInd3].style["transform"] = "rotateY(" + rDeg2 + "deg) translateZ(0px)";
-            //pl[bsInd3].style.visibility = "visible";          
         }
         //debugger;
     }
