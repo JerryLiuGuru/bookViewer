@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title></title>
+    <meta charset="UTF-8">    
+    <link href="css/book.css" rel="stylesheet">
+    
+  </head>
+  <body onload="onLoad();">
+    
+    <table>
+      <tr><td>
+      <div id="choose" class="select">      
+        Click the button to choose a folder of book images.
+        <input type="file" id="fileURL" webkitdirectory mozdirectory msdirectory odirectory directory multiple />  
+      </div>
+      </td><td>
+      <div class="dropzone" id="drop_zone">Drop files here</div>
+      <output id="list"></output>
+      <ul id="filelist"></ul>
+      </td><td>
+      <div id="fileOutput" class="info" style="visibility: hidden;">
+        <table width="98%" align="center">
+          <tr style="text-align: left" >
+            <td>
+              <img id="book_cover_img" src="" width="50px" height="50px" />
+            </td>
+            <td>
+              <!--<p>Folder path: <label id="folder_path">NA</label>-->
+              <p>Page count:  <label id="page_count">NA</label>            
+            </td>
+            <td>
+              <a class="btn" id="doView" onclick="showBookViewer();" href="#"> View Book </a>
+            </td>
+          </tr>
+        </table>
+      </div>
+      </td><td>
+      <div id="pgCntNum">pgCnt: </div>
+      </td></tr>
+    </table>
+    <p><p><p><p><p><p>
+    <figure class="book" id="bookViewer" style="visibility: visible;">
+      <!-- Front -->
+      <ul class="hardcover_front" id="cover">
+        <li id="cl0">
+          <img class="bimg" id="c0" src="#" alt="" width="98%" height="100%">
+        </li>
+        <li id="cl1">
+          <img class="bimg" id="c1" src="#" alt="" width="98%" height="100%">
+        </li>
+      </ul>
+      
+      <!-- Pages -->
+      <ul class="page" id="pages">
+        <li id="pl0">
+          <img class="bimg" id="p0" src="#" alt="" width="98%" height="100%">
+        </li>
+        <li id="pl1">
+          <img class="bimg" id="p1" src="#" alt="" width="98%" height="100%" style="transform: scaleX(-1); filter: FilpH;">
+        </li>
+        <li id="pl2">
+          <img class="bimg" id="p2" src="#" alt="" width="98%" height="100%">
+        </li>
+        <li id="pl3">
+          <img class="bimg" id="p3" src="#" alt="" width="98%" height="100%" style="transform: scaleX(-1); filter: FilpH;">
+        </li>
+        <!--<li id="pl4">
+          <img class="bimg" id="p4" src="#" alt="">
+        </li>
+        <li id="pl5">
+          <img class="bimg" id="p5" src="" alt="" style="transform: scaleX(-1); filter: FilpH;">
+        </li>-->
+      </ul>
+
+      <!-- Back -->
+      <ul class="hardcover_back" id="back">
+        <li id="bl0">
+          <img class="bimg" id="b0" src="#" alt="" width="98%" height="100%">
+        </li>
+        <li id="bl1">
+          <img class="bimg" id="b1" src="#" alt="" width="98%" height="100%" style="transform: scaleX(-1); filter: FilpH;">
+          <!--<img class="bimg" id="b2" src="#" alt="" width="98%" height="98%">-->
+        </li>
+      </ul>
+      
+      <!-- Spine -->
+      <ul class="book_spine" id="spine">
+        <li id="sl1"></li>
+        <li id="sl2"></li>
+      </ul>
+      
+      <!--<figcaption>
+        <h1>Papelucho Perdido</h1>
+        <span>By Marcela Paz</span>
+        <p>Fennel bamboo shoot pea sprouts rutabaga parsnip green bean gram wattle seed lentil horseradish nori. Grape lettuce turnip greens.</p>
+      </figcaption>-->
+    </figure>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.2/jquery.min.js"></script>
+    <script src="js/filesystemapi.js"></script>
+    <script src="js/book.js"></script>
+  </body>
+</html>
+
+  
