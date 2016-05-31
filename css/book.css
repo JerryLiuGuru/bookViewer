@@ -133,10 +133,10 @@ Table of Contents
 
 .book {
 	position: relative; /*relative;*/
-	top: 100px;
+	top: 100px; 
 	left: 400px;
-	width: 260px; 
-	height: 420px;
+	width: 460px; 	/* modify here */
+	height: 560px;
 	-webkit-perspective: 1000px;
 	-moz-perspective: 1000px;
 	perspective: 1000px;
@@ -220,11 +220,11 @@ Table of Contents
 .hardcover_front {
 	-webkit-transform: rotateY(-34deg) translateZ(8px);
 	-moz-transform: rotateY(-34deg) translateZ(8px);
-	transform: rotateY(-10deg) translateZ(8px);
+	transform: rotateY(-1deg) translateZ(8px);
 	z-index: 0;
 }
 
-.page li:nth-child(1) {
+/*.page li:nth-child(1) {
 	-webkit-transform: rotateY(-28deg);
 	-moz-transform: rotateY(-28deg);
 	transform: rotateY(-9deg);
@@ -263,7 +263,7 @@ Table of Contents
 .hardcover_back {
 	-webkit-transform: rotateY(-15deg) translateZ(-8px);
 	-moz-transform: rotateY(-15deg) translateZ(-8px);
-	transform: rotateY(-5deg) translateZ(-8px);
+	transform: rotateY(0deg) translateZ(-8px);
 }
 
 /*
@@ -363,7 +363,7 @@ Table of Contents
 .hardcover_front li:first-child:before {
 	-webkit-transform: rotateY(90deg) translateZ(158px) translateX(2px);
 	-moz-transform: rotateY(90deg) translateZ(158px) translateX(2px);
-	transform: rotateY(90deg) translateZ(258px) translateX(2px);
+	transform: rotateY(90deg) translateZ(460px) translateX(2px);	/* modify here */
 }
 
 .hardcover_front li:last-child:after,
@@ -381,7 +381,7 @@ Table of Contents
 	box-shadow: 0px 0px 30px 5px #333;
 	-webkit-transform: rotateX(90deg) rotateZ(90deg) translateZ(-140px) translateX(-2px) translateY(-78px);
 	-moz-transform: rotateX(90deg) rotateZ(90deg) translateZ(-140px) translateX(-2px) translateY(-78px);
-	transform: rotateX(90deg) rotateZ(90deg) translateZ(-340px) translateX(-2px) translateY(-78px);
+	transform: rotateX(90deg) rotateZ(90deg) translateZ(-490px) translateX(-2px) translateY(-78px);	/* modify here */
 }
 
 /* thickness of cover */
@@ -400,7 +400,7 @@ Table of Contents
 .hardcover_back li:first-child:before {
 	-webkit-transform: rotateY(90deg) translateZ(158px) translateX(2px);
 	-moz-transform: rotateY(90deg) translateZ(158px) translateX(2px);
-	transform: rotateY(90deg) translateZ(258px) translateX(2px);
+	transform: rotateY(90deg) translateZ(383px) translateX(2px);	/* modify here */
 }
 
 .hardcover_back li:last-child:after,
@@ -419,7 +419,7 @@ Table of Contents
 	box-shadow: 10px -1px 80px 20px #666;
 	-webkit-transform: rotateX(90deg) rotateZ(90deg) translateZ(-140px) translateX(2px) translateY(-78px);
 	-moz-transform: rotateX(90deg) rotateZ(90deg) translateZ(-140px) translateX(2px) translateY(-78px);
-	transform: rotateX(90deg) rotateZ(90deg) translateZ(-340px) translateX(2px) translateY(-78px);
+	transform: rotateX(90deg) rotateZ(90deg) translateZ(-490px) translateX(2px) translateY(-78px);	/* modify here */
 }
 
 /* BOOK SPINE */
@@ -478,7 +478,7 @@ Table of Contents
 	box-shadow: 5px -1px 100px 40px rgba(0, 0, 0, 0.2);
 	-webkit-transform: rotateX(90deg) rotateZ(90deg) translateZ(-210px) translateX(2px) translateY(-6px);
 	-moz-transform: rotateX(90deg) rotateZ(90deg) translateZ(-210px) translateX(2px) translateY(-6px);
-	transform: rotateX(90deg) rotateZ(90deg) translateZ(-410px) translateX(2px) translateY(-6px);
+	transform: rotateX(90deg) rotateZ(90deg) translateZ(-560px) translateX(2px) translateY(-6px);	/* modify here */
 }
 
 .page,
