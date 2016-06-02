@@ -8,12 +8,9 @@ var choose = document.getElementById("choose"),
     bcimg = document.getElementById("book_cover_img"),
     pc = document.getElementById("page_count");
 var files, 
-<<<<<<< HEAD
-=======
     pgInd = 0,
     minDeg = -5,
     pgCnt = -1,
->>>>>>> parent of c3f129f... Draft_ready
     dirpath = "file:///Users/jerryliu/Documents/WebFrontendProject/bookViewer/img/";
 
 var bsRatio = (4/5);  // Book to Screen ratio
@@ -92,21 +89,6 @@ function onLoad(){
         //alert(sA[0] + "," + sA[1]);
     }
     
-<<<<<<< HEAD
-    //alert(cl0.clientWidth + "," + cl0.clientHeight);
-    //alert(cl0.style.width + "," + cl0.style.height);
-    //alert(canvas.clientWidth + "," + canvas.clientHeight);
-    
-    //debugger
-    for (var i = 0, len = pp.length; i < len; i++) {
-        //arg = "rotateY(" + (minDeg-((pp.length-i)*ashft)) + "deg);";
-        //pl[i].style["transform"] = arg;
-        //console.log(i + ": " + arg);
-        pp[i].style["display"] = "none";
-    }
-    //cover.style["transform"] = "rotateY(" + (minDeg-2-(pp.length<<1)-2) + "deg);";
-    //back.style["transform"] = "rotateY(" + (minDeg) + "deg);";        
-=======
     //bimgNameArray = ["cover.jpg", "1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "back.jpg"];
     cover.children[0].children[0].src = "img/cover.jpg";
     
@@ -118,7 +100,7 @@ function onLoad(){
     }
     cover.style["transform"] = "rotateY(" + (minDeg-2-(pp.length<<1)-2) + "deg);";
     back.style["transform"] = "rotateY(" + (minDeg) + "deg);";
->>>>>>> parent of c3f129f... Draft_ready
+
     
     //debugger
     //showBookViewer();
@@ -180,25 +162,14 @@ function getImgArray(files) {
     //debugger;
 }
 
-<<<<<<< HEAD
 var cp = [document.getElementById("c0"), document.getElementById("c1")],
     cl = [document.getElementById("cl0"), document.getElementById("cl1")];
-=======
-function showBookViewer() {
-    var bV = document.getElementById("bookViewer");
-    bV.style["top"] = (window.screen.availHeight/3 - bV.scrollHeight/2) + "px"; //choose.scrollHeight + output.scrollHeight + 350;
-    bV.style["left"] = (window.screen.availWidth/3 - bV.scrollWidth/2) + "px";  
-    bV.style["visibility"] = "visible";
-    
-}
 
 var cp = [document.getElementById("c0"), document.getElementById("c1")];
->>>>>>> parent of c3f129f... Draft_ready
 var pp = [document.getElementById("p0"), document.getElementById("p1"),
             document.getElementById("p2"), document.getElementById("p3")];/*,
             document.getElementById("p4"), document.getElementById("p5")],*/
     pl = [document.getElementById("pl0"), document.getElementById("pl1"),
-<<<<<<< HEAD
             document.getElementById("pl2"), document.getElementById("pl3"),
             document.getElementById("pl4"), document.getElementById("pl5"),
             document.getElementById("pl6"), document.getElementById("pl7")];
@@ -207,34 +178,14 @@ var bp = [document.getElementById("b0"), document.getElementById("b1")],
 var allpl = cl.concat(pl).concat(bl),
     allpp = cp.concat(pp).concat(bp),
     allpg = ["#cover", "#page1", "#page2", "#page3", "#page4", "#back"];
-=======
             document.getElementById("pl2"), document.getElementById("pl3")];/*,
             document.getElementById("pl4"), document.getElementById("pl5")];*/
-var bp = [document.getElementById("b0"), document.getElementById("b1")];
->>>>>>> parent of c3f129f... Draft_ready
-var cover = document.getElementById("cover"),
-    back = document.getElementById("back");
-<<<<<<< HEAD
-<<<<<<< HEAD
 var pshft = 2, zindv = 0, ashft = 0.5;
 var pgInd = 0, minDeg = +2, maxDeg = -182, pgCnt = -1;
 var td_normal = 1, td_short = 0.001;
 var mf = 1;   //A good value to display like turning a page.
 var bvC = document.getElementById("bookViewer").getBoundingClientRect();
-
-function chk_LoR_page_adj_pgInd(x,y) {
-    var spineC = document.getElementById("spine").getBoundingClientRect();
-    var isTrue = (y > (spineC.top)) && (y < (spineC.top+bvC.height)),
-        isOnL =  ( isTrue && (x > (spineC.left-bvC.width)) && (x < (spineC.left)) ),
-        isOnR = ( isTrue && (x > (spineC.left)) && (x < (spineC.left+bvC.width)) );
-
-    if ( isOnL ) {
-=======
-var pshft = 2, zindv = 0, ashft = 1;
-var td_normal = 0.6, td_short = 0.001;
-var mf = 1.1;   //A good value to display like turning a page.
 var spineC = document.getElementById("spine").getBoundingClientRect();
-var bvC = document.getElementById("bookViewer").getBoundingClientRect();
 function book_click(event) {    
     // debugger
     var x = event.clientX;     // Get the horizontal coordinate
@@ -249,83 +200,18 @@ function book_click(event) {
     pgInd =  (pgInd >= pgCnt) ? (pgCnt-1) : pgInd;
 
     if ( isOnLeft ) {
->>>>>>> parent of bf9e7df... Auto-Traversal
         if (pgInd != (pgCnt-1)) {            
             pgInd -= ( ((pgInd%2)==0)?1:0 );   
         }
         pshft = - Math.abs(pshft);
-<<<<<<< HEAD
-    } else if ( isOnR ) {
-=======
-    }
     if ( isOnRight ) {
->>>>>>> parent of bf9e7df... Auto-Traversal
         if (pgInd != 0) {
             pgInd += (pgInd % 2);    
         }
         pshft = Math.abs(pshft);
     }
-<<<<<<< HEAD
     document.getElementById("pgInd").innerHTML = "pgInd: " + pgInd +", sl,t: (" + Math.floor(spineC.left) + "," + Math.floor(spineC.top) + "), x,y: (" + x + "," + y + ")";
-}
 
-function book_click(event) {    
-    // debugger    
-    pgInd =  (pgInd < 0) ? 0 : pgInd;
-    pgInd =  (pgInd >= pgCnt) ? (pgCnt-1) : pgInd;
-    
-    chk_LoR_page_adj_pgInd(event.clientX, event.clientY);
-
-    //Add OnLoad event handler for each image
-    if ( allpp[1].onload == null) {
-        $("#c0").off("load");
-        for (var i = 0; i < allpp.length; i++) {
-            allpp[i].onload = function(event) {
-                sE = event.srcElement;
-                pE = sE.parentElement;
-                var ctx2 = pE.getContext('2d');
-                ctx2.drawImage(sE, 0, 0, sA[0], sA[1]);
-                //alert(sA[0] + "," + sA[1]);    
-            };    
-        }
-    }
-=======
-    $("#pgCntNum").innerHTML = "pgCnt: " + pgCnt;
->>>>>>> parent of bf9e7df... Auto-Traversal
-
-    /*if ( (pgInd == 0) && (this.className == "hardcover_front") ) {
-=======
-var pshft = 2, zindv = 0, ashft = 1;
-var td_normal = 0.6, td_short = 0.001;
-var mf = 1.1;   //A good value to display like turning a page.
-function book_click() {    
-    // debugger
-
-    if ( (pgInd == 0) && (this.className == "hardcover_front") ) {
->>>>>>> parent of c3f129f... Draft_ready
-        pshft = Math.abs(pshft);
-    }
-    if ( (pgInd == (pgCnt-1)) && (this.className == "page") ) {
-        pshft = -Math.abs(pshft);
-        return;        
-    }
-    if ( (pgInd == 0) && (this.className == "page") ) {
-        pgInd = pgCnt-1;    //A trick to show imgs reversely from the last one.
-        pshft = -Math.abs(pshft);
-        return; // Trick for clicking the last img of back: click event will trigger again? Don't know why.
-    }
-    // Todo: handle if the click is on left or right page.
-    // if (click on left), then modify pgInd.
-    // Ensure from the image index in bimgNameArray, or from the position of the book area.
-<<<<<<< HEAD
-    
-<<<<<<< HEAD
-    //handlevisibility(pgInd);
-=======
->>>>>>> parent of bf9e7df... Auto-Traversal
-    
-=======
->>>>>>> parent of c3f129f... Draft_ready
     var rDeg0 = -1, rDeg1 = -1, rDeg2 = -1, rDeg3 = -1, 
         tranZv1 = -8, tranZv2 = 8, tZv = -1, tZv2 = -1,
         n2slot = null, n2slot = null;        
@@ -525,20 +411,13 @@ function book_click() {
             tv = tv.substring(0, tv.indexOf("translateZ")+11) + "0)"; 
             prev1.style["transform"] = tv;
         }
-<<<<<<< HEAD
         
         if (bsInd3 != -1) {
             //pl[bsInd3].style.visibility = "hidden";
             pl[bsInd3].style["transition-duration"] = "0.0001s";
-<<<<<<< HEAD
             pl[bsInd3].style["transform"] = "rotateY(" + ((rDeg2==-1)?rDeg3:rDeg2) + "deg) translateZ(0px)";
-=======
-            pl[bsInd3].style["transform"] = "rotateY(" + rDeg2 + "deg) translateZ(0px)";
->>>>>>> parent of bf9e7df... Auto-Traversal
             //pl[bsInd3].style.visibility = "visible";          
         }
-=======
->>>>>>> parent of c3f129f... Draft_ready
         //debugger;
     }
     pgInd = ( (pgInd+pshft) % pgCnt );

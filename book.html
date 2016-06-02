@@ -9,7 +9,6 @@
   <body onload="onLoad();">
     
     <table>
-<<<<<<< HEAD
       <tr>
         <td>
         <!--<div id="choose" class="select">      
@@ -44,37 +43,6 @@
           <div id="pgInd">pgInd: </div>
         </td>
       </tr>
-=======
-      <tr><td>
-      <div id="choose" class="select">      
-        Click the button to choose a folder of book images.
-        <input type="file" id="fileURL" webkitdirectory mozdirectory msdirectory odirectory directory multiple />  
-      </div>
-      </td><td>
-      <div class="dropzone" id="drop_zone">Drop files here</div>
-      <output id="list"></output>
-      <ul id="filelist"></ul>
-      </td><td>
-      <div id="fileOutput" class="info" style="visibility: hidden;">
-        <table width="98%" align="center">
-          <tr style="text-align: left" >
-            <td>
-              <img id="book_cover_img" src="" width="50px" height="50px" />
-            </td>
-            <td>
-              <!--<p>Folder path: <label id="folder_path">NA</label>-->
-              <p>Page count:  <label id="page_count">NA</label>            
-            </td>
-            <td>
-              <a class="btn" id="doView" onclick="showBookViewer();" href="#"> View Book </a>
-            </td>
-          </tr>
-        </table>
-      </div>
-      </td><td>
-      <div id="pgCntNum">pgCnt: </div>
-      </td></tr>
->>>>>>> parent of c3f129f... Draft_ready
     </table>
     <p></p>
     
@@ -85,58 +53,6 @@
     
     <figure class="book" id="bookViewer" style="visibility: visible;">
       <!-- Front -->
-<<<<<<< HEAD
-      <div class="hardcover_front" id="cover" style="border: 2px solid #2c3e50; border-color: #ff0000;">
-        <canvas id="cl0">
-          <img class="bimg" id="c0" src="#" alt="" style="display: none;">      
-        </canvas>
-        <canvas id="cl1">
-          <img class="bimg" id="c1" src="#" alt="" style="display: none; transform: scaleX(-1); filter: FlipH;">>
-        </canvas>
-      </div>
-      
-      <!-- Pages -->
-      <div class="page" id="page1" style="border: 2px solid #2c3e50; border-color: #00ff00;">
-        <canvas id="pl0">
-          <img class="bimg" id="p0" src="#" alt="" style="display: none;">
-        </canvas>
-        <canvas id="pl1">
-          <img class="bimg" id="p1" src="#" alt="" style="display: none; transform: scaleY(-1) scaleX(-1);">
-        </canvas>
-      </div>
-      <div class="page" id="page2" style="border: 2px solid #2c3e50; border-color: #00ff00;">
-        <canvas id="pl2">
-          <img class="bimg" id="p2" src="#" alt="" style="display: none;">
-        </canvas>
-        <canvas id="pl3">
-          <img class="bimg" id="p3" src="#" alt="" style="display: none; transform: scaleY(-1) scaleX(-1);">
-        </canvas>
-      </div>
-      <div class="page" id="page3" style="border: 2px solid #2c3e50; border-color: #00ff00;">
-        <canvas id="pl4">
-          <img class="bimg" id="p4" src="#" alt="" style="display: none;">
-        </canvas>
-        <canvas id="pl5">
-          <img class="bimg" id="p5" src="" alt=""  style="display: none; transform: scaleY(-1) scaleX(-1);">
-        </canvas>
-      </div>
-      <div class="page" id="page4" style="border: 2px solid #2c3e50; border-color: #00ff00;">
-        <canvas id="pl6">
-          <img class="bimg" id="p6" src="#" alt="" style="display: none;">
-        </canvas>
-        <canvas id="pl7">
-          <img class="bimg" id="p7" src="" alt=""  style="display: none; transform: scaleY(-1) scaleX(-1);">
-        </canvas>
-      </div>
-
-      <!-- Back -->
-      <div class="hardcover_back" id="back" style="border: 2px solid #2c3e50; border-color: #0000ff;">
-        <canvas id="bl0">
-          <img class="bimg" id="b0" src="#" alt="" style="display: none;">
-        </canvas>
-        <canvas id="bl1">
-          <img class="bimg" id="b1" src="#" alt="" style="display: none; transform: scaleY(-1) scaleX(-1);">
-=======
       <ul class="hardcover_front" id="cover">
         <li id="cl0">
           <img class="bimg" id="c0" src="#" alt="" width="98%" height="100%">
@@ -175,7 +91,6 @@
         </li>
         <li id="bl1">
           <img class="bimg" id="b1" src="#" alt="" width="98%" height="100%" style="transform: scaleX(-1); filter: FilpH;">
->>>>>>> parent of c3f129f... Draft_ready
           <!--<img class="bimg" id="b2" src="#" alt="" width="98%" height="98%">-->
         </canvas>
       </div>
