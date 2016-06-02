@@ -8,11 +8,59 @@ var choose = document.getElementById("choose"),
     bcimg = document.getElementById("book_cover_img"),
     pc = document.getElementById("page_count");
 var files, 
-    pgInd = 0,
-    minDeg = -0,
-    pgCnt = -1,
     dirpath = "file:///Users/jerryliu/Documents/WebFrontendProject/bookViewer/img/";
 
+var bsRatio = (4/5);  // Book to Screen ratio
+function handleResize(img) {
+    /*
+        A3: 297 x 420mm => 0.707143 ( w/h : aspect ratio)
+        A4: 210 x 297mm => 0.70707
+        B4: 250 x 353mm => 0.708215
+        B5: 176 x 250mm => 0.704
+    */
+    var i, w = img.width, h = img.height, sw = window.screen.availWidth, sh = window.screen.availHeight;
+    var wratio = (2*w)/sw, hratio = h/sh, tw, th;
+    
+    if (wratio > bsRatio) {     // 因為 width 要用 2*w 估算，先以 width 評估起
+        tw = (bsRatio * sw)>>1;
+        th = (tw / w) * h;
+    } else {
+        th = (h / sh);
+    }
+    if (th > (sh*5/6)) {  // height 還是太高超過 screen height, 要改以 height 估算
+        th = bsRatio * sh;
+        tw = (th / h) * w;
+    }
+
+    rw = Math.round(tw);
+    rh = Math.round(th);    
+    bV.style.width = rw + "px";
+    bV.style.height = rh + "px";
+    
+    for (i=0; i<allpl.length; i++) {
+        if (allpl[i] != null) {
+            allpl[i].width = rw;    //NOTICE: Can't use .style.width = "xxx" + "px";
+            allpl[i].height = rh;   //Since it will remain the original size of inner image.
+        }
+    }
+    return [rw, rh];
+}
+
+var debugMode = true;
+var bV = document.getElementById("bookViewer");
+
+function showBookViewer() {
+    if (debugMode) {    // for debug;
+        bV.style.top = (window.screen.availHeight/2 - bV.offsetHeight/2.5) + "px"; //choose.offsetHeight + output.offsetHeight + 350;
+        bV.style.left = (window.screen.availWidth/2 - bV.offsetWidth/2) + "px";  
+    } else {
+        bV.style.top = (window.screen.availHeight/2 - bV.offsetHeight/2) + "px"; //choose.offsetHeight + output.offsetHeight + 350;
+        bV.style.left = (window.screen.availWidth/2) + "px";  
+    } 
+    bV.style["visibility"] = "visible";
+}
+
+var sA = [];    // to store the size(width & height) of cover image for the other imgs.
 
 function onLoad(){
     //debugger
@@ -20,29 +68,46 @@ function onLoad(){
     //window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
     //window.requestFileSystem(window.TEMPORARY, 1024*1024, onInitFs, errorHandler);
     
-    cover.addEventListener("click",book_click);
-    pages.addEventListener("click",book_click);
-    back.addEventListener("click",book_click);
-    
-    //bimgNameArray = ["cover.jpg", "1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "back.jpg"];
-    cover.children[0].children[0].src = imgPath + "cover.jpg";
-    
-    //debugger
-    /*for (var i = 0, len = pp.length; i < len; i++) {
-        arg = "rotateY(" + (minDeg-((pp.length-i)*ashft)) + "deg);";
-        pl[i].style["transform"] = arg;
-        //console.log(i + ": " + arg);
-    }*/
-    cover.style["transform"] = "rotateY(" + (minDeg-2-(pp.length<<1)-2) + "deg);";
-    back.style["transform"] = "rotateY(" + (minDeg) + "deg);";
-    
-    //debugger
-    showBookViewer();
+    for (var i = 0; i<allpg.length; i++) {
+        $(allpg[i]).off("click");
+        $(allpg[i]).on("click", book_click);
+    }
 
+    //cover.style = "border: 2px solid #2c3e50";
+    c0.src = imgPath + "cover.jpg";
+    c0.src = imgPath + "1.jpg";
+
+    c0.onload = function() {
+        sA = handleResize(c0);
+        var ctx2 = cl[0].getContext('2d');
+        ctx2.drawImage(c0, 0, 0, sA[0], sA[1]);
+        
+        showBookViewer();
+        //alert(sA[0] + "," + sA[1]);
+    }
+    
+    //alert(cl0.clientWidth + "," + cl0.clientHeight);
+    //alert(cl0.style.width + "," + cl0.style.height);
+    //alert(canvas.clientWidth + "," + canvas.clientHeight);
+    
+    //debugger
+    for (var i = 0, len = pp.length; i < len; i++) {
+        //arg = "rotateY(" + (minDeg-((pp.length-i)*ashft)) + "deg);";
+        //pl[i].style["transform"] = arg;
+        //console.log(i + ": " + arg);
+        pp[i].style["display"] = "none";
+    }
+    //cover.style["transform"] = "rotateY(" + (minDeg-2-(pp.length<<1)-2) + "deg);";
+    //back.style["transform"] = "rotateY(" + (minDeg) + "deg);";        
+    
+    //debugger
+    //showBookViewer();
+
+    //alert("ok");
 };
 
 
-(function(){
+/*(function(){
     var file, 
         extension;
         //input2 = document.getElementById("dirPath"), 
@@ -58,6 +123,7 @@ function onLoad(){
         showBookViewer();
     }, false);
 })();
+*/
 
 function getImgArray(files) {
     //debugger;
@@ -114,14 +180,6 @@ function getImgArray(files) {
     //debugger;
 }
 
-function showBookViewer() {
-    var bV = document.getElementById("bookViewer");
-    bV.style["top"] = (window.screen.availHeight/3 - bV.scrollHeight/3) + "px"; //choose.scrollHeight + output.scrollHeight + 350;
-    bV.style["left"] = (window.screen.availWidth/2) + "px";  
-    bV.style["visibility"] = "visible";
-    
-}
-
 var cp = [document.getElementById("c0"), document.getElementById("c1")],
     cl = [document.getElementById("cl0"), document.getElementById("cl1")];
 var pp = [document.getElementById("p0"), document.getElementById("p1"),
@@ -134,43 +192,57 @@ var pp = [document.getElementById("p0"), document.getElementById("p1"),
             document.getElementById("pl6"), document.getElementById("pl7")];
 var bp = [document.getElementById("b0"), document.getElementById("b1")],
     bl = [document.getElementById("bl0"), document.getElementById("bl1")];
-var allpl = cl.concat(pl).concat(bl);
+var allpl = cl.concat(pl).concat(bl),
+    allpp = cp.concat(pp).concat(bp),
+    allpg = ["#cover", "#page1", "#page2", "#page3", "#page4", "#back"];
 var cover = document.getElementById("cover"),
-    pages = document.getElementById("pages"),
     back = document.getElementById("back");
 var pshft = 2, zindv = 0, ashft = 0.5;
+var pgInd = 0, minDeg = +2, maxDeg = -182, pgCnt = -1;
 var td_normal = 1, td_short = 0.001;
 var mf = 1;   //A good value to display like turning a page.
-var spineC = document.getElementById("spine").getBoundingClientRect();
 var bvC = document.getElementById("bookViewer").getBoundingClientRect();
-function book_click(event) {    
-    // debugger
-    var x = event.clientX;     // Get the horizontal coordinate
-    var y = event.clientY;     // Get the vertical coordinate
-    var isOnLeft, isOnRight;
-    
-    spineC = document.getElementById("spine").getBoundingClientRect();
-    
-    isTrue = (y > (spineC.top)) && (y < (spineC.top+bvC.height));
-    isOnLeft =  ( isTrue && (x > (spineC.left-bvC.width)) && (x < (spineC.left)) );
-    isOnRight = ( isTrue && (x > (spineC.left)) && (x < (spineC.left+bvC.width)) );
-    
-    pgInd =  (pgInd < 0) ? 0 : pgInd;
-    pgInd =  (pgInd >= pgCnt) ? (pgCnt-1) : pgInd;
 
-    if ( isOnLeft ) {
+function chk_LoR_page_adj_pgInd(x,y) {
+    var spineC = document.getElementById("spine").getBoundingClientRect();
+    var isTrue = (y > (spineC.top)) && (y < (spineC.top+bvC.height)),
+        isOnL =  ( isTrue && (x > (spineC.left-bvC.width)) && (x < (spineC.left)) ),
+        isOnR = ( isTrue && (x > (spineC.left)) && (x < (spineC.left+bvC.width)) );
+
+    if ( isOnL ) {
         if (pgInd != (pgCnt-1)) {            
             pgInd -= ( ((pgInd%2)==0)?1:0 );   
         }
         pshft = - Math.abs(pshft);
-    }
-    if ( isOnRight ) {
+    } else if ( isOnR ) {
         if (pgInd != 0) {
             pgInd += (pgInd % 2);    
         }
         pshft = Math.abs(pshft);
     }
     document.getElementById("pgInd").innerHTML = "pgInd: " + pgInd +", sl,t: (" + Math.floor(spineC.left) + "," + Math.floor(spineC.top) + "), x,y: (" + x + "," + y + ")";
+}
+
+function book_click(event) {    
+    // debugger    
+    pgInd =  (pgInd < 0) ? 0 : pgInd;
+    pgInd =  (pgInd >= pgCnt) ? (pgCnt-1) : pgInd;
+    
+    chk_LoR_page_adj_pgInd(event.clientX, event.clientY);
+
+    //Add OnLoad event handler for each image
+    if ( allpp[1].onload == null) {
+        $("#c0").off("load");
+        for (var i = 0; i < allpp.length; i++) {
+            allpp[i].onload = function(event) {
+                sE = event.srcElement;
+                pE = sE.parentElement;
+                var ctx2 = pE.getContext('2d');
+                ctx2.drawImage(sE, 0, 0, sA[0], sA[1]);
+                //alert(sA[0] + "," + sA[1]);    
+            };    
+        }
+    }
 
     /*if ( (pgInd == 0) && (this.className == "hardcover_front") ) {
         pshft = Math.abs(pshft);
@@ -204,7 +276,7 @@ function book_click(event) {
                     pp[0].src = imgPath + bimgNameArray[pgInd+2];
                     rDeg2 = minDeg - (pp.length*ashft);
                 }
-                rDeg1 = (-180 - minDeg);
+                rDeg1 = (maxDeg - minDeg);
                 tZv = 0;
                 tZv2 = tranZv2;
                 pl[0].style["-webkit-transform"] = "rotateY(" + rDeg2 + "deg) translateZ(" + tranZv2 + "px)"; 
@@ -245,7 +317,7 @@ function book_click(event) {
                if (bp[1].src = "#") {
                     bp[1].src = imgPath + bimgNameArray[ (tV==1)?pgInd:(pgInd+1) ];
                 }
-                rDeg1 = ( -180 - minDeg + ((1+pp.length)*ashft) );
+                rDeg1 = ( maxDeg - minDeg + ((1+pp.length)*ashft) );
                 tZv = tranZv1;
                 tZv2 = 0;
 
@@ -355,7 +427,8 @@ function book_click(event) {
         pp[bsInd1].src = next1;
         if (n2slot == null) {
             pp[bsInd2].src = next2;
-            n2slot = pl[bsInd2];
+            //n2slot = pl[bsInd2];
+            n2slot = $(allpg[bsInd2>>1])[0];
         }
         if (rDeg2 != -1) {  // exchange an older one with next next one.
             n2slot.style["transition-duration"] = td_short + "s";
@@ -366,12 +439,18 @@ function book_click(event) {
             n2slot.style["transform"] = "rotateY(" + rDeg3 + "deg) translateZ(" + tZv2 + "px)";            
             n2slot.style["z-index"] = zindv;
         }
+        /*
         pl[bsInd].style["transition-duration"] = td_normal + "s";
         pl[bsInd].style["transform"] = "rotateY(" + rDeg0 + "deg) translateZ(0)";
 
         pl[bsInd1].style["transition-duration"] = (td_normal*mf) + "s";
         pl[bsInd1].style["transform"] = "rotateY(" + rDeg1 + "deg) translateZ(" + tZv1 + "px)";
         pl[bsInd1].style["z-index"] = zindv;
+        */
+        tPg = allpg[1+(bsInd>>1)]; 
+        $(tPg)[0].style["transition-duration"] = td_normal + "s";
+        $(tPg)[0].style["transform"] = "rotateY(" + rDeg0 + "deg) translateZ(0)";
+        $(tPg)[0].style["z-index"] = zindv;
 
         if (prev1 != null) {
             tv = prev1.style["transform"];
