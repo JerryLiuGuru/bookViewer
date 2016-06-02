@@ -197,6 +197,7 @@ var allpl = cl.concat(pl).concat(bl),
     allpg = ["#cover", "#page1", "#page2", "#page3", "#page4", "#back"];
 var cover = document.getElementById("cover"),
     back = document.getElementById("back");
+<<<<<<< HEAD
 var pshft = 2, zindv = 0, ashft = 0.5;
 var pgInd = 0, minDeg = +2, maxDeg = -182, pgCnt = -1;
 var td_normal = 1, td_short = 0.001;
@@ -210,16 +211,43 @@ function chk_LoR_page_adj_pgInd(x,y) {
         isOnR = ( isTrue && (x > (spineC.left)) && (x < (spineC.left+bvC.width)) );
 
     if ( isOnL ) {
+=======
+var pshft = 2, zindv = 0, ashft = 1;
+var td_normal = 0.6, td_short = 0.001;
+var mf = 1.1;   //A good value to display like turning a page.
+var spineC = document.getElementById("spine").getBoundingClientRect();
+var bvC = document.getElementById("bookViewer").getBoundingClientRect();
+function book_click(event) {    
+    // debugger
+    var x = event.clientX;     // Get the horizontal coordinate
+    var y = event.clientY;     // Get the vertical coordinate
+    var isOnLeft, isOnRight;
+    
+    isTrue = (y > (spineC.top)) && (y < (spineC.top+bvC.height));
+    isOnLeft =  ( isTrue && (x > (spineC.left-bvC.width)) && (x < (spineC.left)) );
+    isOnRight = ( isTrue && (x > (spineC.left)) && (x < (spineC.left+bvC.width)) );
+    
+    pgInd =  (pgInd < 0) ? 0 : pgInd;
+    pgInd =  (pgInd >= pgCnt) ? (pgCnt-1) : pgInd;
+
+    if ( isOnLeft ) {
+>>>>>>> parent of bf9e7df... Auto-Traversal
         if (pgInd != (pgCnt-1)) {            
             pgInd -= ( ((pgInd%2)==0)?1:0 );   
         }
         pshft = - Math.abs(pshft);
+<<<<<<< HEAD
     } else if ( isOnR ) {
+=======
+    }
+    if ( isOnRight ) {
+>>>>>>> parent of bf9e7df... Auto-Traversal
         if (pgInd != 0) {
             pgInd += (pgInd % 2);    
         }
         pshft = Math.abs(pshft);
     }
+<<<<<<< HEAD
     document.getElementById("pgInd").innerHTML = "pgInd: " + pgInd +", sl,t: (" + Math.floor(spineC.left) + "," + Math.floor(spineC.top) + "), x,y: (" + x + "," + y + ")";
 }
 
@@ -243,6 +271,9 @@ function book_click(event) {
             };    
         }
     }
+=======
+    $("#pgCntNum").innerHTML = "pgCnt: " + pgCnt;
+>>>>>>> parent of bf9e7df... Auto-Traversal
 
     /*if ( (pgInd == 0) && (this.className == "hardcover_front") ) {
         pshft = Math.abs(pshft);
@@ -260,7 +291,10 @@ function book_click(event) {
     // if (click on left), then modify pgInd.
     // Ensure from the image index in bimgNameArray, or from the position of the book area.
     
+<<<<<<< HEAD
     //handlevisibility(pgInd);
+=======
+>>>>>>> parent of bf9e7df... Auto-Traversal
     
     var rDeg0 = -1, rDeg1 = -1, rDeg2 = -1, rDeg3 = -1, 
         tranZv1 = -8, tranZv2 = 8, tZv = -1, tZv2 = -1,
@@ -461,7 +495,11 @@ function book_click(event) {
         if (bsInd3 != -1) {
             //pl[bsInd3].style.visibility = "hidden";
             pl[bsInd3].style["transition-duration"] = "0.0001s";
+<<<<<<< HEAD
             pl[bsInd3].style["transform"] = "rotateY(" + ((rDeg2==-1)?rDeg3:rDeg2) + "deg) translateZ(0px)";
+=======
+            pl[bsInd3].style["transform"] = "rotateY(" + rDeg2 + "deg) translateZ(0px)";
+>>>>>>> parent of bf9e7df... Auto-Traversal
             //pl[bsInd3].style.visibility = "visible";          
         }
         //debugger;
