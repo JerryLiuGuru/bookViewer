@@ -86,7 +86,12 @@ function onLoad(){
         tA.off("click");
         tA.on("click", book_click);
         tP = tA[0]; 
-        tP.style["transform"] = "rotateY(" + minDeg + "deg)";// translateZ(0px)";
+        if ( (i==0) || (i==(allpg.length-1)) ) {
+            //tP.style["transform"] = "rotateY(" + minDeg + "deg) translateZ(8px)";
+            tP.style["transform"] = "rotateY(" + minDeg + "deg)";// translateZ(0px)";
+        } else {
+            tP.style["transform"] = "rotateY(" + minDeg + "deg)";// translateZ(0px)";    
+        }        
         tP.style["z-index"] = -j;
         
         allpp[j].style["display"] = "none";
@@ -185,7 +190,7 @@ function getImgArray(files) {
     for (i = 0; i<tnArray.length; i++) {
         fN = tnArray[i];
         while (fN[0]=="0") {
-            if ( (debugMode) && (fN.substring(0,fN.indexOf(".")).length == 2) ) {
+            if ( (debugMode && (tnArray.length<20))  && (fN.substring(0,fN.indexOf(".")).length == 2) ) {
                 break;
             }
             fN = fN.substring(1,fN.length);
@@ -259,6 +264,7 @@ function chg_2_ori_size(pg) {
     pP.style["transform"] = tv;
 }
 
+var tTime = [0.8, 0.8];
 function book_click(event) {    
     // debugger    
     imInd =  (imInd < 0) ? 0 : imInd;
@@ -277,7 +283,9 @@ function book_click(event) {
                 var ctx2 = pE.getContext('2d');
                 ctx2.drawImage(sE, 0, 0, sA[0], sA[1]);
                 //alert(sA[0] + "," + sA[1]);
-                console.log("img '" + sE.id + "' start loaded.")
+                ts = sE.src;
+                ts = ts.substring(ts.lastIndexOf("/")+1);
+                console.log("img '" + sE.id + ":" + ts + "' start loaded.")
             };    
         }
     }
@@ -302,13 +310,13 @@ function book_click(event) {
     
     var rDegC = -1, rDegN = -1; 
         tranZv1 = -0, tranZv2 = 0, tZv = -1, tZv2 = -1,
-        prvInd = -1, tranStyle = "", tTime = [1.5, 0.8];
+        prvInd = -1, tranStyle = "", trZ = "";
     var pI = null, cI = null, nI = null, nnI = null;    // prevImg, currentImg, nextImg, nextnextImg.
     var pP = null, cP = null, nP = null;    // prevPage, curPage, nxtPage.
     var pC = null, cC = null, nC = null;    // prevCanvas, curCanvas, nxtCanvas        
     zindv++;
+    var tt = "all " + (td_normal*tTime[imInd%2]) + "s ease";// z-index 0.0001s";
     if (imInd <= 1) {    //click cover or its back page
-        tt = "all " + (td_normal*tTime[imInd]) + "s ease";
         switch (imInd) {
             case 0:
                if (ci[1].src[ci[1].src.length-1] == "#") {
@@ -318,6 +326,7 @@ function book_click(event) {
                     pi[0].src = imgPath + bimgNameArray[imInd+2];
                     rDegN = minDeg2;
                 }
+                //trZ = "translateZ(-8px)"
                 rDegC = maxDeg; //(maxDeg - minDeg);
                 tZv = 0;
                 tZv2 = tranZv2;
@@ -325,9 +334,13 @@ function book_click(event) {
                 nP = $(allpg[1])[0];
                 //nP.style["transition"] = tt;
                 nP.style["z-index"] = zindv;
+                nnC = allpl[0];
+                nnC.style["transition-duration"] = "0.001s"; 
+                nnC.style["z-index"] = zindv;
                 break;
             case 1:
                 //pP = $(allpg[1])[0];
+                //trZ = "translateZ(8px)"
                 rDegC = minDeg;
                 tZv = tranZv2;
                 //chg_2_ori_size(pP);
@@ -343,7 +356,7 @@ function book_click(event) {
         nC.style["z-index"] = zindv;
         
         cover.style["transition-duration"] = td_normal + "s";
-        cover.style["transform"] = "rotateY(" + rDegC + "deg) ";
+        cover.style["transform"] = "rotateY(" + rDegC + "deg) " + trZ;
         cover.style["z-index"] = zindv;
     } else if (imInd >= (imCnt-2)) {    //click last page or back
         var tpiCnt = imCnt, tV = 0;
@@ -351,7 +364,6 @@ function book_click(event) {
             tpiCnt += 1;
             tV = 1;
         }
-        tt = "all " + (td_normal*tTime[imInd%2]) + "s ease";
         switch (imInd) {
             case (tpiCnt-2):
                 //if (bi[1].src[bi[1].src.length-1] == "#") {
@@ -370,10 +382,13 @@ function book_click(event) {
                 tZv = 0;
                 tZv2 = tranZv1;
 
-                nP = $(allpg[allpg.length-2])[0];
+                tInd = (imInd-4) % pl.length;
+                nP = $(allpg[ 1 + (tInd>>1) ])[0];
                 nP.style["z-index"] = zindv;
-                nnC = pl[ (imInd-2) % pl.length ];
-                nnC.src = imgPath + bimgNameArray[ tpiCnt-2 ];
+                nnC = pl[ tInd ];
+                nnC.src = imgPath + bimgNameArray[ tpiCnt-3 ];
+                nnC.style["transition-duration"] = "0.001s"; 
+                nnC.style["z-index"] = zindv;
                 //nP.style["transition"] = tt;
 
                 //bsInd0 = ((imInd-2) % pi.length)>>1;                
@@ -405,11 +420,41 @@ function book_click(event) {
 
         var bsInd0 = (imInd-2) % pi.length, bsInd1 = -1, bsInd2 = -1, bsInd3 = -1;
         var next1, next2, tZv1 = -1, tZv2 = -1;
-        tt = "all " + (td_normal*tTime[imInd%2]) + "s ease";
         //ttc = "all " + (td_normal) + "s ease";
         switch (imInd % 2) {
             case 0: //even, check the following 2 pages to load correct images.
-                next1 = imgPath + bimgNameArray[imInd+1];
+                for (i = imInd, j = bsInd0; i < (imInd+4); i+=2, j+=2) {
+                    next1 = imgPath + bimgNameArray[i+1];
+                    next2 = imgPath + bimgNameArray[i+2];
+                    k = (j+1) % pi.length;   // the index for next page
+                    pi[k].src = next1;
+                    if ((i+2) >= (imCnt-2)) {   // handle the case for showing the back pages
+                        if (i==imInd) {
+                            nP = back;
+                            nnC = bc[0];
+                        }                        
+                        if (bi[0].src.indexOf(next2) == -1) {
+                            bi[0].src = next2;    
+                        }
+                        break; 
+                    } else {
+                        bsInd2 = (j+2) % pi.length;
+                        if (pi[bsInd2].src.indexOf(next2) == -1) {
+                            pi[bsInd2].src = next2; 
+                        }                                                
+                        if (i==imInd) {
+                            nP = $(allpg[1+(bsInd2>>1)])[0];
+                            nnC = pl[bsInd2];
+                        } 
+                    } 
+                }
+                bsInd1 = bsInd0 + 1;
+                rDegC = maxDeg;
+                rDegN = minDeg;
+                tZv1 = tranZv1; 
+                tZv2 = tranZv2;
+
+                /*next1 = imgPath + bimgNameArray[imInd+1];
                 next2 = imgPath + bimgNameArray[imInd+2];
                 bsInd1 = bsInd0+1;   // the index for next page
                 pi[bsInd1].src = next1;
@@ -426,10 +471,42 @@ function book_click(event) {
                 rDegC = maxDeg;
                 rDegN = minDeg;
                 tZv1 = tranZv1; 
-                tZv2 = tranZv2;
+                tZv2 = tranZv2;*/
                 break;
             case 1: //odd, check the previous 2 pages to load correct imgs.
-                next1 = imgPath + bimgNameArray[imInd-1];
+                for (i = imInd, j = bsInd0; i > (imInd-4); i-=2, j-=2) {
+                    next1 = imgPath + bimgNameArray[i-1];
+                    next2 = imgPath + bimgNameArray[i-2];
+                    k = ((j-1)<0)?(pi.length-1):(j-1);
+                    pi[k].src = next1;
+                    
+                    if ((i-2) <= 1) {   // handle the case for showing the back pages
+                        if (i==imInd) {
+                            nP = cover;
+                            nnC = cc[1];
+                        }                        
+                        if (ci[1].src.indexOf(next2) == -1) {
+                            ci[1].src = next2;    
+                        }
+                        break; 
+                    } else {
+                        bsInd2 = (j<2)?(pi.length-(2-j)):(j-2);
+                        if (pi[bsInd2].src.indexOf(next2) == -1) {
+                            pi[bsInd2].src = next2; 
+                        }                                                
+                        if (i==imInd) {
+                            nP = $(allpg[1+(bsInd2>>1)])[0];
+                            nnC = pl[bsInd2];
+                        } 
+                    } 
+                }
+                bsInd1 = bsInd0-1;
+                rDegC = minDeg;
+                rDegN = maxDeg;
+                tZv1 = tranZv2; 
+                tZv2 = tranZv1;
+
+                /*next1 = imgPath + bimgNameArray[imInd-1];
                 next2 = imgPath + bimgNameArray[imInd-2];
                 bsInd1 = bsInd0-1;
                 pi[bsInd1].src = next1;
@@ -446,7 +523,7 @@ function book_click(event) {
                 rDegC = minDeg;
                 rDegN = maxDeg;
                 tZv1 = tranZv2; 
-                tZv2 = tranZv1;
+                tZv2 = tranZv1;*/
                 break;
             default:
                 alert("Err pgInd: " + imInd);
@@ -455,9 +532,11 @@ function book_click(event) {
         //nP.style["transition"] = "all 0.001s ease z-index 0.001s";
         nP.style["transform"] = "rotateY(" + rDegN + "deg)";
         nP.style["z-index"] = zindv;
+        nnC.style["transition-duration"] = "0.001s"; 
         nnC.style["z-index"] = zindv;
 
         nC = pl[bsInd1];
+        //nC.style["transition-duration"] = "0.001s";
         nC.style["transition"] = tt;
         nC.style["z-index"] = zindv;
         cP = $(allpg[1+(bsInd0>>1)])[0];
