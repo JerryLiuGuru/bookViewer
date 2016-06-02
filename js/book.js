@@ -6,7 +6,7 @@ var choose = document.getElementById("choose"),
     input = document.getElementById("fileURL"),
     output = document.getElementById("fileOutput"),
     bcimg = document.getElementById("book_cover_img"),
-    pc = document.getElementById("page_count");
+    pgc = document.getElementById("page_count");
 var files, 
     dirpath = "file:///Users/jerryliu/Documents/WebFrontendProject/bookViewer/img/";
 
@@ -19,7 +19,7 @@ function handleResize(img) {
         B5: 176 x 250mm => 0.704
     */
     var i, w = img.width, h = img.height, sw = window.screen.availWidth, sh = window.screen.availHeight;
-    var wratio = (2*w)/sw, hratio = h/sh, tw, th;
+    var wratio = (2*w)/sw, hratio = h/sh, tw=null, th=null;
     
     if (wratio > bsRatio) {     // 因為 width 要用 2*w 估算，先以 width 評估起
         tw = (bsRatio * sw)>>1;
@@ -30,6 +30,15 @@ function handleResize(img) {
     if (th > (sh*5/6)) {  // height 還是太高超過 screen height, 要改以 height 估算
         th = bsRatio * sh;
         tw = (th / h) * w;
+    }
+    if (tw == null) {
+        if (th > (tw<<1)) {
+            th = (bsRatio * sh);
+            tw = w * (th/h);    
+        } else {
+            tw = (bsRatio * sw)>>1;
+            th = h * (tw/w);            
+        }
     }
 
     rw = Math.round(tw);
@@ -48,16 +57,17 @@ function handleResize(img) {
 
 var debugMode = true;
 var bV = document.getElementById("bookViewer");
-
+var bvC;
 function showBookViewer() {
     if (debugMode) {    // for debug;
-        bV.style.top = (window.screen.availHeight/2 - bV.offsetHeight/2.5) + "px"; //choose.offsetHeight + output.offsetHeight + 350;
+        bV.style.top = (window.screen.availHeight/2 - bV.offsetHeight/2) + "px"; //choose.offsetHeight + output.offsetHeight + 350;
         bV.style.left = (window.screen.availWidth/2 - bV.offsetWidth/2) + "px";  
     } else {
         bV.style.top = (window.screen.availHeight/2 - bV.offsetHeight/2) + "px"; //choose.offsetHeight + output.offsetHeight + 350;
         bV.style.left = (window.screen.availWidth/2) + "px";  
     } 
     bV.style["visibility"] = "visible";
+    bvC = document.getElementById("bookViewer").getBoundingClientRect();
 }
 
 var sA = [];    // to store the size(width & height) of cover image for the other imgs.
@@ -68,18 +78,38 @@ function onLoad(){
     //window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
     //window.requestFileSystem(window.TEMPORARY, 1024*1024, onInitFs, errorHandler);
     
-    for (var i = 0; i<allpg.length; i++) {
-        $(allpg[i]).off("click");
-        $(allpg[i]).on("click", book_click);
+    var tA, tP;
+    for (var i=(allpg.length-1); i>=0; i--) {
+        j = (i<<1);
+        
+        tA = $(allpg[i]); 
+        tA.off("click");
+        tA.on("click", book_click);
+        tP = tA[0]; 
+        if ( (i==0) || (i==(allpg.length-1)) ) {
+            //tP.style["transform"] = "rotateY(" + minDeg + "deg) translateZ(8px)";
+            tP.style["transform"] = "rotateY(" + minDeg + "deg)";// translateZ(0px)";
+        } else {
+            tP.style["transform"] = "rotateY(" + minDeg + "deg)";// translateZ(0px)";    
+        }        
+        tP.style["z-index"] = -j;
+        
+        allpp[j].style["display"] = "none";
+        allpp[j+1].style["display"] = "none";
+        allpl[j].style["z-index"] = -j+1;
+        allpl[j+1].style["z-index"] = -j;
+        //tP.style["display"] = "none";
     }
+    //$(allpg[0])[0].style["display"] = "inherit";
+    $(allpg[0])[0].style["z-index"] = zindv;
 
     //cover.style = "border: 2px solid #2c3e50";
     c0.src = imgPath + "cover.jpg";
-    c0.src = imgPath + "1.jpg";
+    //c1.src = imgPath + "1.jpg";
 
     c0.onload = function() {
         sA = handleResize(c0);
-        var ctx2 = cl[0].getContext('2d');
+        var ctx2 = cc[0].getContext('2d');
         ctx2.drawImage(c0, 0, 0, sA[0], sA[1]);
         
         showBookViewer();
@@ -91,12 +121,12 @@ function onLoad(){
     //alert(canvas.clientWidth + "," + canvas.clientHeight);
     
     //debugger
-    for (var i = 0, len = pp.length; i < len; i++) {
+    /*for (var i = 0, len = allpp.length; i < len; i++) {
         //arg = "rotateY(" + (minDeg-((pp.length-i)*ashft)) + "deg);";
         //pl[i].style["transform"] = arg;
         //console.log(i + ": " + arg);
-        pp[i].style["display"] = "none";
-    }
+        allpp[i].style["display"] = "none";
+    }*/
     //cover.style["transform"] = "rotateY(" + (minDeg-2-(pp.length<<1)-2) + "deg);";
     //back.style["transform"] = "rotateY(" + (minDeg) + "deg);";        
     
@@ -160,6 +190,9 @@ function getImgArray(files) {
     for (i = 0; i<tnArray.length; i++) {
         fN = tnArray[i];
         while (fN[0]=="0") {
+            if ( (debugMode && (tnArray.length<20))  && (fN.substring(0,fN.indexOf(".")).length == 2) ) {
+                break;
+            }
             fN = fN.substring(1,fN.length);
         }
         tnArray[i]=fN;
@@ -172,36 +205,38 @@ function getImgArray(files) {
     //var url1 = window.URL.createObjectURL(files[0]);               
     bcimg.src = imgPath + bimgNameArray[0];
     //fp.innerHTML = "img/"; //url1.substring(0,url1.lastIndexOf("/"));
-    pgCnt = bimgNameArray.length;
-    pc.innerHTML = pgCnt + " images.";
+    imCnt = bimgNameArray.length;
+    pgc.innerHTML = imCnt + " images.";
     //debugger
     output.style["visibility"] = "visible";
-
+    
     //debugger;
 }
 
-var cp = [document.getElementById("c0"), document.getElementById("c1")],
-    cl = [document.getElementById("cl0"), document.getElementById("cl1")];
-var pp = [document.getElementById("p0"), document.getElementById("p1"),
+var ci = [document.getElementById("c0"), document.getElementById("c1")],
+    cc = [document.getElementById("cl0"), document.getElementById("cl1")];
+var pi = [document.getElementById("p0"), document.getElementById("p1"),
             document.getElementById("p2"), document.getElementById("p3"),
             document.getElementById("p4"), document.getElementById("p5"),
             document.getElementById("p6"), document.getElementById("p7")];
     pl = [document.getElementById("pl0"), document.getElementById("pl1"),
             document.getElementById("pl2"), document.getElementById("pl3"),
             document.getElementById("pl4"), document.getElementById("pl5"),
-            document.getElementById("pl6"), document.getElementById("pl7")];
-var bp = [document.getElementById("b0"), document.getElementById("b1")],
-    bl = [document.getElementById("bl0"), document.getElementById("bl1")];
-var allpl = cl.concat(pl).concat(bl),
-    allpp = cp.concat(pp).concat(bp),
-    allpg = ["#cover", "#page1", "#page2", "#page3", "#page4", "#back"];
+            document.getElementById("pl6"), document.getElementById("pl7")],
+    pg = [document.getElementById("page1"), document.getElementById("page2"),
+            document.getElementById("page3"), document.getElementById("page4")];
+var bi = [document.getElementById("b0"), document.getElementById("b1")],
+    bc = [document.getElementById("bl0"), document.getElementById("bl1")];
 var cover = document.getElementById("cover"),
     back = document.getElementById("back");
-var pshft = 2, zindv = 0, ashft = 0.5;
-var pgInd = 0, minDeg = +2, maxDeg = -182, pgCnt = -1;
-var td_normal = 1, td_short = 0.001;
+var allpl = cc.concat(pl).concat(bc),
+    allpp = ci.concat(pi).concat(bi),
+    allpg = ["#cover", "#page1", "#page2", "#page3", "#page4", "#back"];
+var pshft = 2, zindv = 1, ashft = 0;    // ashft: the diff of degrees bet. two pages on the same side.
+var imInd = 0, minDeg = 0, maxDeg = -180;   // minDeg can't be > 0 since the image will be up side down and mirror.
+var minDeg2 = minDeg-allpg.length*ashft, maxDeg2 = maxDeg+allpg.length*ashft;
+var imCnt = -1, td_normal = 1, td_short = 0.001;
 var mf = 1;   //A good value to display like turning a page.
-var bvC = document.getElementById("bookViewer").getBoundingClientRect();
 
 function chk_LoR_page_adj_pgInd(x,y) {
     var spineC = document.getElementById("spine").getBoundingClientRect();
@@ -210,23 +245,30 @@ function chk_LoR_page_adj_pgInd(x,y) {
         isOnR = ( isTrue && (x > (spineC.left)) && (x < (spineC.left+bvC.width)) );
 
     if ( isOnL ) {
-        if (pgInd != (pgCnt-1)) {            
-            pgInd -= ( ((pgInd%2)==0)?1:0 );   
+        if (imInd < (imCnt-1)) {            
+            imInd -= ( ((imInd%2)==0)?1:0 );   
         }
         pshft = - Math.abs(pshft);
     } else if ( isOnR ) {
-        if (pgInd != 0) {
-            pgInd += (pgInd % 2);    
+        if (imInd > 0) {
+            imInd += (imInd % 2);    
         }
         pshft = Math.abs(pshft);
     }
-    document.getElementById("pgInd").innerHTML = "pgInd: " + pgInd +", sl,t: (" + Math.floor(spineC.left) + "," + Math.floor(spineC.top) + "), x,y: (" + x + "," + y + ")";
+    document.getElementById("pgInd").innerHTML = "pgInd: " + imInd +", sl,t: (" + Math.floor(spineC.left) + "," + Math.floor(spineC.top) + "), x,y: (" + x + "," + y + ")";
 }
 
+function chg_2_ori_size(pg) {
+    tv = pg.style["transform"];
+    tv = tv.substring(0, tv.indexOf("translateZ")+11) + "0px)";
+    pP.style["transform"] = tv;
+}
+
+var tTime = [0.8, 0.8];
 function book_click(event) {    
     // debugger    
-    pgInd =  (pgInd < 0) ? 0 : pgInd;
-    pgInd =  (pgInd >= pgCnt) ? (pgCnt-1) : pgInd;
+    imInd =  (imInd < 0) ? 0 : imInd;
+    imInd =  (imInd >= imCnt) ? (imCnt-1) : imInd;
     
     chk_LoR_page_adj_pgInd(event.clientX, event.clientY);
 
@@ -234,12 +276,16 @@ function book_click(event) {
     if ( allpp[1].onload == null) {
         $("#c0").off("load");
         for (var i = 0; i < allpp.length; i++) {
+            allpp[i].src = imgPath + bimgNameArray[i]; 
             allpp[i].onload = function(event) {
                 sE = event.srcElement;
                 pE = sE.parentElement;
                 var ctx2 = pE.getContext('2d');
                 ctx2.drawImage(sE, 0, 0, sA[0], sA[1]);
-                //alert(sA[0] + "," + sA[1]);    
+                //alert(sA[0] + "," + sA[1]);
+                ts = sE.src;
+                ts = ts.substring(ts.lastIndexOf("/")+1);
+                console.log("img '" + sE.id + ":" + ts + "' start loaded.")
             };    
         }
     }
@@ -262,212 +308,245 @@ function book_click(event) {
     
     //handlevisibility(pgInd);
     
-    var rDeg0 = -1, rDeg1 = -1, rDeg2 = -1, rDeg3 = -1, 
-        tranZv1 = -8, tranZv2 = 8, tZv = -1, tZv2 = -1,
-        n2slot = null, n2slot = null;        
+    var rDegC = -1, rDegN = -1; 
+        tranZv1 = -0, tranZv2 = 0, tZv = -1, tZv2 = -1,
+        prvInd = -1, tranStyle = "", trZ = "";
+    var pI = null, cI = null, nI = null, nnI = null;    // prevImg, currentImg, nextImg, nextnextImg.
+    var pP = null, cP = null, nP = null;    // prevPage, curPage, nxtPage.
+    var pC = null, cC = null, nC = null;    // prevCanvas, curCanvas, nxtCanvas        
     zindv++;
-    if (pgInd <= 1) {    //click cover or its back page
-        switch (pgInd) {
+    var tt = "all " + (td_normal*tTime[imInd%2]) + "s ease";// z-index 0.0001s";
+    if (imInd <= 1) {    //click cover or its back page
+        switch (imInd) {
             case 0:
-               if (cp[1].src = "#") {
-                    cp[1].src = imgPath + bimgNameArray[pgInd+1];
+               if (ci[1].src[ci[1].src.length-1] == "#") {
+                    ci[1].src = imgPath + bimgNameArray[imInd+1];
                 }
-                if (pp[0].src = "#") {
-                    pp[0].src = imgPath + bimgNameArray[pgInd+2];
-                    rDeg2 = minDeg - (pp.length*ashft);
+                if (pi[0].src[pi[0].src.length-1] == "#") {
+                    pi[0].src = imgPath + bimgNameArray[imInd+2];
+                    rDegN = minDeg2;
                 }
-                rDeg1 = (maxDeg - minDeg);
+                //trZ = "translateZ(-8px)"
+                rDegC = maxDeg; //(maxDeg - minDeg);
                 tZv = 0;
                 tZv2 = tranZv2;
-                pl[0].style["-webkit-transform"] = "rotateY(" + rDeg2 + "deg) translateZ(" + tranZv2 + "px)"; 
+
+                nP = $(allpg[1])[0];
+                //nP.style["transition"] = tt;
+                nP.style["z-index"] = zindv;
+                nnC = allpl[0];
+                nnC.style["transition-duration"] = "0.001s"; 
+                nnC.style["z-index"] = zindv;
                 break;
             case 1:
-                rDeg1 = minDeg - ((1+pp.length)*ashft);
+                //pP = $(allpg[1])[0];
+                //trZ = "translateZ(8px)"
+                rDegC = minDeg;
                 tZv = tranZv2;
-                tZv2 = 0;
-                
-                tv = pl[0].style["-webkit-transform"];
-                tv = tv.substring(0, tv.indexOf("translateZ")+11) + tZv2 + "px)";
-                pl[0].style["-webkit-transform"] = tv;
+                //chg_2_ori_size(pP);
                 
                 /*pgInd = -2;
                 pshft = 2;  // Trick for auto-traversal.*/
                 break; 
             default:
-                alert("Imp pgInd: " + pgInd);
+                alert("Imp pgInd: " + imInd);
         }
-        cover.style["transition-duration"] = td_normal + "s";
-        cover.style["-webkit-transform"] = "rotateY(" + rDeg1 + "deg) translateZ(" + tZv + "px)";
-        //e.style["-moz-transform"] = "rotateY(" + rDeg + "deg) translateZ(0)";
-        //e.style["transform"] = "rotateY(" + rDeg + "deg) translateZ(0)";
-        cover.style["z-index"] = zindv;
+        nC = cc[1-imInd];
+        nC.style["transition"] = tt;
+        nC.style["z-index"] = zindv;
         
-        pl[0].style["z-index"] = zindv; 
-
-        back.style["-webkit-transform"] = "rotateY(" + minDeg + "deg)";// translateZ(" + tranZv2 + "px)";
-        back.style["z-index"] = -1;
-    } else if (pgInd >= (pgCnt-2)) {    //click last page or back
-        var tpgCnt = pgCnt, tV = 0;
-        if ((tpgCnt % 2)==1) {   // total cnt should be even. some page missing. A trick to handle this.
-            tpgCnt += 1;
+        cover.style["transition-duration"] = td_normal + "s";
+        cover.style["transform"] = "rotateY(" + rDegC + "deg) " + trZ;
+        cover.style["z-index"] = zindv;
+    } else if (imInd >= (imCnt-2)) {    //click last page or back
+        var tpiCnt = imCnt, tV = 0;
+        if ((tpiCnt % 2)==1) {   // total cnt should be even. some page missing. A trick to handle this.
+            tpiCnt += 1;
             tV = 1;
         }
-        switch (pgInd) {
-            case (tpgCnt-2):
-               if (bp[1].src = "#") {
-                    bp[1].src = imgPath + bimgNameArray[ (tV==1)?pgInd:(pgInd+1) ];
-                }
-                rDeg1 = ( maxDeg - minDeg + ((1+pp.length)*ashft) );
+        switch (imInd) {
+            case (tpiCnt-2):
+                //if (bi[1].src[bi[1].src.length-1] == "#") {
+                    bi[1].src = imgPath + bimgNameArray[ (tV==1)?imInd:(imInd+1) ];
+                //}
+                rDegC = maxDeg; //( maxDeg - minDeg + ((1+pp.length)*ashft) );
                 tZv = tranZv1;
                 tZv2 = 0;
 
-                bsInd = (pgInd-2) % pp.length;
-                prev = (bsInd==0)?(pl.length-1):(bsInd-1);
-                
-                pages.removeEventListener("click",book_click);
-
+                //pages.removeEventListener("click",book_click);
                 /*pgInd = 17;
                 pshft = -2; // Trick for auto-traversal.*/
                 break;
-            case (tpgCnt-1):
-                rDeg1 = minDeg;
+            case (tpiCnt-1):
+                rDegC = minDeg;
                 tZv = 0;
                 tZv2 = tranZv1;
 
-                bsInd = (pgInd-2) % pp.length;                
-                prev = (bsInd<=1)?(pl.length-(2-bsInd)):(bsInd-2);
+                tInd = (imInd-4) % pl.length;
+                nP = $(allpg[ 1 + (tInd>>1) ])[0];
+                nP.style["z-index"] = zindv;
+                nnC = pl[ tInd ];
+                nnC.src = imgPath + bimgNameArray[ tpiCnt-3 ];
+                nnC.style["transition-duration"] = "0.001s"; 
+                nnC.style["z-index"] = zindv;
+                //nP.style["transition"] = tt;
+
+                //bsInd0 = ((imInd-2) % pi.length)>>1;                
+                //prvInd = (bsInd<=1)?(pl.length-(2-bsInd)):(bsInd-2);
                 
                 //$("#pages").off("click", book_click);
-                $("#pages").off("click");
-                pages.addEventListener("click" , book_click);
+                //$("#pages").off("click");
+                //pages.addEventListener("click" , book_click);
 
                 break; 
             default:
-                alert("Imp pgInd: " + pgInd);
+                alert("Imp pgInd: " + imInd);
         }
-        //e.style["-moz-transform"] = "rotateY(" + rDeg + "deg) translateZ(0)";
-        //e.style["transform"] = "rotateY(" + rDeg + "deg) translateZ(0)";
-        back.style["-webkit-transform"] = "rotateY(" + rDeg1 + "deg) translateZ(" + tZv + "px)";
+        tind = (imInd==(tpiCnt-1))?0:1;
+        nC = bc[tind];
+        nC.style["transition"] = tt;
+        nC.style["z-index"] = zindv;
+        
         back.style["transition-duration"] = td_normal + "s";
+        back.style["transform"] = "rotateY(" + rDegC + "deg)";// translateZ(" + tZv + "px)";
         back.style["z-index"] = zindv;
-
-        tv = pl[prev].style["-webkit-transform"];
+        /*tv = pl[prvInd].style["transform"];
         tv = tv.substring(0, tv.indexOf("translateZ")+11) + tZv2 + "px)";
-        pl[prev].style["-webkit-transform"] = tv;
+        pl[prvInd].style["transform"] = tv;*/
     } else {
         // pgInd: 0  1      2   3   4   5   6   7   8   9       (pgCnt-1)   pgCnt  
         //        C0 C1     P0  P1  P2  P3  P4  P5              B0          B1
         // if (pgInd > 5) && (pgInd < (pgCnt-3)), don't turn page.
 
-        var bsInd = (pgInd-2) % pp.length, bsInd1 = -1, bsInd2 = -1, tZv1 = -1, tZv2 = -2;
-        var cs = (pgInd % 2), next1, next2, prev1=null,bsInd3=-1;
-        switch (cs) {
+        var bsInd0 = (imInd-2) % pi.length, bsInd1 = -1, bsInd2 = -1, bsInd3 = -1;
+        var next1, next2, tZv1 = -1, tZv2 = -1;
+        //ttc = "all " + (td_normal) + "s ease";
+        switch (imInd % 2) {
             case 0: //even, check the following 2 pages to load correct images.
-                next1 = imgPath + bimgNameArray[pgInd+1];
-                next2 = imgPath + bimgNameArray[pgInd+2];
-                bsInd1 = bsInd+1;   // the inde for next page
-                if ((pgInd+2) >= (pgCnt-2)) {   // handle the case for showing the back pages
-                    n2slot = back;
-                    bp[0].src = next2;
-                    rDeg3 = ( minDeg );    // Always turn to the same degree.
-                } else {
-                    bsInd2 = (bsInd+2) % pp.length;
-                    bsInd3 = (bsInd+3) % pp.length;
-                    rDeg2 = minDeg - ( ((pgInd+2)>=(2+(pp.length>>1)))?(pp.length>>1)*ashft:(pgInd+1)*ashft ); 
-                    rDeg3 = rDeg2 + 1;
-                } 
-                if ( pgInd < (2+(pp.length>>1)) ) {  // the degree for bsInd (current page) and next page, get the page before bsInd
-                    rDeg0 = ( -180 - minDeg + ((1+bsInd)*ashft));   
-                    rDeg1 = rDeg0 + ashft;
-                } else {
-                    rDeg1 = ( -180 - minDeg + ((pp.length>>1)*ashft)); // pp.length 中間左頁
-                    rDeg0 = rDeg1 - ashft;
+                for (i = imInd, j = bsInd0; i < (imInd+4); i+=2, j+=2) {
+                    next1 = imgPath + bimgNameArray[i+1];
+                    next2 = imgPath + bimgNameArray[i+2];
+                    k = (j+1) % pi.length;   // the index for next page
+                    pi[k].src = next1;
+                    if ((i+2) >= (imCnt-2)) {   // handle the case for showing the back pages
+                        if (i==imInd) {
+                            nP = back;
+                            nnC = bc[0];
+                        }                        
+                        if (bi[0].src.indexOf(next2) == -1) {
+                            bi[0].src = next2;    
+                        }
+                        break; 
+                    } else {
+                        bsInd2 = (j+2) % pi.length;
+                        if (pi[bsInd2].src.indexOf(next2) == -1) {
+                            pi[bsInd2].src = next2; 
+                        }                                                
+                        if (i==imInd) {
+                            nP = $(allpg[1+(bsInd2>>1)])[0];
+                            nnC = pl[bsInd2];
+                        } 
+                    } 
                 }
-                if (pgInd <= 2) {
-                    prev1 = cover;
-                } else {
-                    prev1 = (bsInd==0)?pl[pl.length-1]:pl[bsInd-1];
-                }
+                bsInd1 = bsInd0 + 1;
+                rDegC = maxDeg;
+                rDegN = minDeg;
                 tZv1 = tranZv1; 
                 tZv2 = tranZv2;
+
+                /*next1 = imgPath + bimgNameArray[imInd+1];
+                next2 = imgPath + bimgNameArray[imInd+2];
+                bsInd1 = bsInd0+1;   // the index for next page
+                pi[bsInd1].src = next1;
+                if ((imInd+2) >= (imCnt-2)) {   // handle the case for showing the back pages
+                    nP = back;
+                    bi[0].src = next2;
+                    nnC = bc[0];
+                } else {
+                    bsInd2 = (bsInd0+2) % pi.length;
+                    pi[bsInd2].src = next2;
+                    nP = $(allpg[1+(bsInd2>>1)])[0];
+                    nnC = pl[bsInd2]; 
+                } 
+                rDegC = maxDeg;
+                rDegN = minDeg;
+                tZv1 = tranZv1; 
+                tZv2 = tranZv2;*/
                 break;
             case 1: //odd, check the previous 2 pages to load correct imgs.
-                next1 = imgPath + bimgNameArray[pgInd-1];
-                next2 = imgPath + bimgNameArray[pgInd-2];
-                bsInd1 = bsInd-1;
-                if ((pgInd-2)<=1) {
-                    n2slot = cover;
-                    cp[1].src = next2;
-                    rDeg3 = ( -180 - minDeg ); // Always turn to the same degree.                    
-                } else {
-                    bsInd2 = (bsInd<2)?(pp.length-(2-bsInd)):(bsInd-2);
-                    bsInd3 = (bsInd<3)?(pp.length-(3-bsInd)):(bsInd-3);
-                    rDeg2 = -180 - minDeg + ( ((pgInd+2)>=(2+(pp.length>>1)))?(pp.length>>1)*ashft:(pgInd-3)*ashft );
-                    rDeg3 = rDeg2 - 1; 
+                for (i = imInd, j = bsInd0; i > (imInd-4); i-=2, j-=2) {
+                    next1 = imgPath + bimgNameArray[i-1];
+                    next2 = imgPath + bimgNameArray[i-2];
+                    k = ((j-1)<0)?(pi.length-1):(j-1);
+                    pi[k].src = next1;
+                    
+                    if ((i-2) <= 1) {   // handle the case for showing the back pages
+                        if (i==imInd) {
+                            nP = cover;
+                            nnC = cc[1];
+                        }                        
+                        if (ci[1].src.indexOf(next2) == -1) {
+                            ci[1].src = next2;    
+                        }
+                        break; 
+                    } else {
+                        bsInd2 = (j<2)?(pi.length-(2-j)):(j-2);
+                        if (pi[bsInd2].src.indexOf(next2) == -1) {
+                            pi[bsInd2].src = next2; 
+                        }                                                
+                        if (i==imInd) {
+                            nP = $(allpg[1+(bsInd2>>1)])[0];
+                            nnC = pl[bsInd2];
+                        } 
+                    } 
                 }
-                if (pgInd <= 3 ) {    
-                    rDeg0 = ( minDeg - (((pp.length>>1)+1)*ashft));
-                    rDeg1 = rDeg0 - ashft;
-                } else {
-                    rDeg1 = ( minDeg - ((pp.length>>1)*ashft) ); // pp.length 中間右頁
-                    rDeg0 = rDeg1 + ashft;                    
-                }
-                if (pgInd >= (pgCnt-3)) {
-                    prev1 = back;
-                } else {
-                    prev1 = ((bsInd+1)==pl.length)?pl[0]:pl[bsInd+1];
-                }
+                bsInd1 = bsInd0-1;
+                rDegC = minDeg;
+                rDegN = maxDeg;
                 tZv1 = tranZv2; 
                 tZv2 = tranZv1;
+
+                /*next1 = imgPath + bimgNameArray[imInd-1];
+                next2 = imgPath + bimgNameArray[imInd-2];
+                bsInd1 = bsInd0-1;
+                pi[bsInd1].src = next1;
+                if ((imInd-2)<=1) {
+                    nP = cover;
+                    ci[1].src = next2;
+                    nnC = cc[1];
+                } else {
+                    bsInd2 = (bsInd0<2)?(pi.length-(2-bsInd0)):(bsInd0-2);
+                    pi[bsInd2].src = next2;
+                    nP = $(allpg[1+(bsInd2>>1)])[0];
+                    nnC = pl[bsInd2];
+                }
+                rDegC = minDeg;
+                rDegN = maxDeg;
+                tZv1 = tranZv2; 
+                tZv2 = tranZv1;*/
                 break;
             default:
-                alert("Err pgInd: " + pgInd);
-        } 
+                alert("Err pgInd: " + imInd);
+        }
+        nP.style["transition-duration"] = "0.001s"; 
+        //nP.style["transition"] = "all 0.001s ease z-index 0.001s";
+        nP.style["transform"] = "rotateY(" + rDegN + "deg)";
+        nP.style["z-index"] = zindv;
+        nnC.style["transition-duration"] = "0.001s"; 
+        nnC.style["z-index"] = zindv;
 
-        pp[bsInd1].src = next1;
-        if (n2slot == null) {
-            pp[bsInd2].src = next2;
-            //n2slot = pl[bsInd2];
-            n2slot = $(allpg[bsInd2>>1])[0];
-        }
-        if (rDeg2 != -1) {  // exchange an older one with next next one.
-            n2slot.style["transition-duration"] = td_short + "s";
-            n2slot.style["transform"] = "rotateY(" + rDeg2 + "deg) translateZ(" + tZv2 + "px)";
-            n2slot.style["z-index"] = zindv;
-        } else {    // back or cover case
-            n2slot.style["transition-duration"] = (td_normal*mf) + "s";               
-            n2slot.style["transform"] = "rotateY(" + rDeg3 + "deg) translateZ(" + tZv2 + "px)";            
-            n2slot.style["z-index"] = zindv;
-        }
-        /*
-        pl[bsInd].style["transition-duration"] = td_normal + "s";
-        pl[bsInd].style["transform"] = "rotateY(" + rDeg0 + "deg) translateZ(0)";
-
-        pl[bsInd1].style["transition-duration"] = (td_normal*mf) + "s";
-        pl[bsInd1].style["transform"] = "rotateY(" + rDeg1 + "deg) translateZ(" + tZv1 + "px)";
-        pl[bsInd1].style["z-index"] = zindv;
-        */
-        tPg = allpg[1+(bsInd>>1)]; 
-        $(tPg)[0].style["transition-duration"] = td_normal + "s";
-        $(tPg)[0].style["transform"] = "rotateY(" + rDeg0 + "deg) translateZ(0)";
-        $(tPg)[0].style["z-index"] = zindv;
-
-        if (prev1 != null) {
-            tv = prev1.style["transform"];
-            tv = tv.substring(0, tv.indexOf("translateZ")+11) + "0)"; 
-            prev1.style["transform"] = tv;
-        }
-        
-        if (bsInd3 != -1) {
-            //pl[bsInd3].style.visibility = "hidden";
-            pl[bsInd3].style["transition-duration"] = "0.0001s";
-            pl[bsInd3].style["transform"] = "rotateY(" + ((rDeg2==-1)?rDeg3:rDeg2) + "deg) translateZ(0px)";
-            //pl[bsInd3].style.visibility = "visible";          
-        }
+        nC = pl[bsInd1];
+        //nC.style["transition-duration"] = "0.001s";
+        nC.style["transition"] = tt;
+        nC.style["z-index"] = zindv;
+        cP = $(allpg[1+(bsInd0>>1)])[0];
+        cP.style["transition-duration"] = td_normal + "s";
+        cP.style["transform"] = "rotateY(" + rDegC + "deg)";
+        cP.style["z-index"] = zindv;
         //debugger;
     }
-    pgInd = (pgInd+pshft);
-    document.getElementById("pgInd").innerHTML += ", after: " + pgInd;
+    imInd = (imInd+pshft);
+    document.getElementById("pgInd").innerHTML += ", after: " + imInd;
 }
 
 function handlevisibility(pgInd) {
