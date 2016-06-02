@@ -223,14 +223,15 @@ canvas {
 	3. opening cover, back cover and pages
 */
 
+/*
 .hardcover_front {
 	-webkit-transform: rotateY(-34deg) translateZ(8px);
 	-moz-transform: rotateY(-34deg) translateZ(8px);
-	transform: rotateY(-10deg) translateZ(8px);
+	transform: rotateY(-1deg) translateZ(8px);
 	z-index: 0;
 }
 
-.page li:nth-child(1) {
+/*.page li:nth-child(1) {
 	-webkit-transform: rotateY(-28deg);
 	-moz-transform: rotateY(-28deg);
 	transform: rotateY(-9deg);
@@ -264,13 +265,13 @@ canvas {
 	-webkit-transform: rotateY(-36deg);
 	-moz-transform: rotateY(-36deg);
 	transform: rotateY(-17deg);
-}*/
+}
 
 .hardcover_back {
 	-webkit-transform: rotateY(-15deg) translateZ(-8px);
 	-moz-transform: rotateY(-15deg) translateZ(-8px);
-	transform: rotateY(-5deg) translateZ(-8px);
-}
+	transform: rotateY(0deg) translateZ(-8px);
+}*/
 
 /*
 	4. position, transform & transition
@@ -282,32 +283,35 @@ canvas {
 .book_spine,
 .hardcover_front canvas,
 .hardcover_back canvas,
+.page canvas,
 .book_spine li {
 	position: absolute;
 	top: 0;
 	left: 0;
 	/*width: 100%;
 	height: 100%;*/
-	-webkit-transform-style: preserve-3d;
-	-moz-transform-style: preserve-3d;
-	transform-style: preserve-3d;
+	/*-webkit-transform-style: flat;
+	-moz-transform-style: flat;
+	transform-style: flat;*/
+	transition: all 5s ease;
 }
 
+/*
 .hardcover_front,
 .hardcover_back,
 .page {
 	-webkit-transform-origin: 0% 100%;
 	-moz-transform-origin: 0% 100%;
 	transform-origin: 0% 100%;
-}
+}*/
 
-.hardcover_front {
+/*.hardcover_front {
 	-webkit-transition: all 0.8s ease, z-index 0.01s;
 	-moz-transition: all 0.8s ease, z-index 0.01s;
 	transition: all 0.8s ease, z-index 0.01s;
 }
 
-/* HARDCOVER front */
+/* HARDCOVER front 
 .hardcover_front canvas:first-child {
 	cursor: default;
 	-webkit-user-select: none;
@@ -323,8 +327,9 @@ canvas {
 	-moz-transform: rotateY(180deg) translateZ(2px);
 	transform: rotateY(180deg) translateZ(2px);
 }
+*/
 
-/* HARDCOVER back */
+/* HARDCOVER back 
 .hardcover_back canvas:first-child {
 	-webkit-transform: translateZ(2px);
 	-moz-transform: translateZ(2px);
@@ -336,6 +341,7 @@ canvas {
 	-moz-transform: translateZ(-2px);
 	transform: translateZ(-2px);
 }
+*/
 
 /* thickness of cover */
 .hardcover_front canvas:first-child:after,
@@ -356,6 +362,7 @@ canvas {
 }
 
 /* HARDCOVER front */
+/*
 .hardcover_front canvas:first-child:after,
 .hardcover_front canvas:first-child:before {
 	width: 4px;
@@ -371,7 +378,7 @@ canvas {
 .hardcover_front canvas:first-child:before {
 	-webkit-transform: rotateY(90deg) translateZ(158px) translateX(2px);
 	-moz-transform: rotateY(90deg) translateZ(158px) translateX(2px);
-	transform: rotateY(90deg) translateZ(258px) translateX(2px);
+	transform: rotateY(90deg) translateZ(460px) translateX(2px);	/* modify here 
 }
 
 .hardcover_front canvas:last-child:after,
@@ -389,11 +396,12 @@ canvas {
 	box-shadow: 0px 0px 30px 5px #333;
 	-webkit-transform: rotateX(90deg) rotateZ(90deg) translateZ(-140px) translateX(-2px) translateY(-78px);
 	-moz-transform: rotateX(90deg) rotateZ(90deg) translateZ(-140px) translateX(-2px) translateY(-78px);
-	transform: rotateX(90deg) rotateZ(90deg) translateZ(-340px) translateX(-2px) translateY(-78px);
+	transform: rotateX(90deg) rotateZ(90deg) translateZ(-490px) translateX(-2px) translateY(-78px);	/* modify here 
 }
+*/
 
 /* thickness of cover */
-
+/*
 .hardcover_back canvas:first-child:after,
 .hardcover_back canvas:first-child:before {
 	width: 4px;
@@ -408,7 +416,7 @@ canvas {
 .hardcover_back canvas:first-child:before {
 	-webkit-transform: rotateY(90deg) translateZ(158px) translateX(2px);
 	-moz-transform: rotateY(90deg) translateZ(158px) translateX(2px);
-	transform: rotateY(90deg) translateZ(258px) translateX(2px);
+	transform: rotateY(90deg) translateZ(383px) translateX(2px);	/* modify here 
 }
 
 .hardcover_back canvas:last-child:after,
@@ -427,8 +435,9 @@ canvas {
 	box-shadow: 10px -1px 80px 20px #666;
 	-webkit-transform: rotateX(90deg) rotateZ(90deg) translateZ(-140px) translateX(2px) translateY(-78px);
 	-moz-transform: rotateX(90deg) rotateZ(90deg) translateZ(-140px) translateX(2px) translateY(-78px);
-	transform: rotateX(90deg) rotateZ(90deg) translateZ(-340px) translateX(2px) translateY(-78px);
+	transform: rotateX(90deg) rotateZ(90deg) translateZ(-490px) translateX(2px) translateY(-78px);	/* modify here 
 }
+*/
 
 /* BOOK SPINE */
 .book_spine {
@@ -486,7 +495,7 @@ canvas {
 	box-shadow: 5px -1px 100px 40px rgba(0, 0, 0, 0.2);
 	-webkit-transform: rotateX(90deg) rotateZ(90deg) translateZ(-210px) translateX(2px) translateY(-6px);
 	-moz-transform: rotateX(90deg) rotateZ(90deg) translateZ(-210px) translateX(2px) translateY(-6px);
-	transform: rotateX(90deg) rotateZ(90deg) translateZ(-410px) translateX(2px) translateY(-6px);
+	transform: rotateX(90deg) rotateZ(90deg) translateZ(-560px) translateX(2px) translateY(-6px);	/* modify here */
 }
 
 .page,
@@ -494,22 +503,22 @@ canvas {
 	position: absolute;
 	top: 0;
 	left: 0;
-	-webkit-transform-style: preserve-3d;
+	/*-webkit-transform-style: preserve-3d;
 	-moz-transform-style: preserve-3d;
-	transform-style: preserve-3d;
+	transform-style: preserve-3d;*/
 }
 
-.page {
+/*.page {
 	width: 99%;
 	height: 99%;
 	top: 1%;
 	left: 1%;
 /*	top: 1%;
-	left: 3%;*/
+	left: 3%;
 	z-index: 0;
-}
+}*/
 
-.page > canvas {
+/*.page > canvas {
 	width: 100%;
 	height: 100%;
 	-webkit-transform-origin: left center;
@@ -558,6 +567,7 @@ canvas {
 	-moz-transition-duration: 0.6s;
 	transition-duration: 0.6s;
 }
+*/
 
 /*
 	5. events
