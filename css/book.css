@@ -132,11 +132,19 @@ Table of Contents
 */
 
 .book {
+<<<<<<< HEAD
 	position: absolute; /*relative;*/
 	/*top: 100px; 
 	left: 400px;
 	width: 60px; 	
 	height: 60px;*/	/* modify here */
+=======
+	position: relative; /*relative;*/
+	top: 100px;
+	left: 400px;
+	width: 260px; 
+	height: 420px;
+>>>>>>> parent of c3f129f... Draft_ready
 	-webkit-perspective: 1000px;
 	-moz-perspective: 1000px;
 	perspective: 1000px;
@@ -226,11 +234,11 @@ canvas {
 .hardcover_front {
 	-webkit-transform: rotateY(-34deg) translateZ(8px);
 	-moz-transform: rotateY(-34deg) translateZ(8px);
-	transform: rotateY(-1deg) translateZ(8px);
+	transform: rotateY(-10deg) translateZ(8px);
 	z-index: 0;
 }
 
-/*.page li:nth-child(1) {
+.page li:nth-child(1) {
 	-webkit-transform: rotateY(-28deg);
 	-moz-transform: rotateY(-28deg);
 	transform: rotateY(-9deg);
@@ -269,7 +277,7 @@ canvas {
 .hardcover_back {
 	-webkit-transform: rotateY(-15deg) translateZ(-8px);
 	-moz-transform: rotateY(-15deg) translateZ(-8px);
-	transform: rotateY(0deg) translateZ(-8px);
+	transform: rotateY(-5deg) translateZ(-8px);
 }
 
 /*
@@ -371,7 +379,7 @@ canvas {
 .hardcover_front canvas:first-child:before {
 	-webkit-transform: rotateY(90deg) translateZ(158px) translateX(2px);
 	-moz-transform: rotateY(90deg) translateZ(158px) translateX(2px);
-	transform: rotateY(90deg) translateZ(460px) translateX(2px);	/* modify here */
+	transform: rotateY(90deg) translateZ(258px) translateX(2px);
 }
 
 .hardcover_front canvas:last-child:after,
@@ -389,7 +397,7 @@ canvas {
 	box-shadow: 0px 0px 30px 5px #333;
 	-webkit-transform: rotateX(90deg) rotateZ(90deg) translateZ(-140px) translateX(-2px) translateY(-78px);
 	-moz-transform: rotateX(90deg) rotateZ(90deg) translateZ(-140px) translateX(-2px) translateY(-78px);
-	transform: rotateX(90deg) rotateZ(90deg) translateZ(-490px) translateX(-2px) translateY(-78px);	/* modify here */
+	transform: rotateX(90deg) rotateZ(90deg) translateZ(-340px) translateX(-2px) translateY(-78px);
 }
 
 /* thickness of cover */
@@ -408,7 +416,7 @@ canvas {
 .hardcover_back canvas:first-child:before {
 	-webkit-transform: rotateY(90deg) translateZ(158px) translateX(2px);
 	-moz-transform: rotateY(90deg) translateZ(158px) translateX(2px);
-	transform: rotateY(90deg) translateZ(383px) translateX(2px);	/* modify here */
+	transform: rotateY(90deg) translateZ(258px) translateX(2px);
 }
 
 .hardcover_back canvas:last-child:after,
@@ -427,7 +435,7 @@ canvas {
 	box-shadow: 10px -1px 80px 20px #666;
 	-webkit-transform: rotateX(90deg) rotateZ(90deg) translateZ(-140px) translateX(2px) translateY(-78px);
 	-moz-transform: rotateX(90deg) rotateZ(90deg) translateZ(-140px) translateX(2px) translateY(-78px);
-	transform: rotateX(90deg) rotateZ(90deg) translateZ(-490px) translateX(2px) translateY(-78px);	/* modify here */
+	transform: rotateX(90deg) rotateZ(90deg) translateZ(-340px) translateX(2px) translateY(-78px);
 }
 
 /* BOOK SPINE */
@@ -486,7 +494,7 @@ canvas {
 	box-shadow: 5px -1px 100px 40px rgba(0, 0, 0, 0.2);
 	-webkit-transform: rotateX(90deg) rotateZ(90deg) translateZ(-210px) translateX(2px) translateY(-6px);
 	-moz-transform: rotateX(90deg) rotateZ(90deg) translateZ(-210px) translateX(2px) translateY(-6px);
-	transform: rotateX(90deg) rotateZ(90deg) translateZ(-560px) translateX(2px) translateY(-6px);	/* modify here */
+	transform: rotateX(90deg) rotateZ(90deg) translateZ(-410px) translateX(2px) translateY(-6px);
 }
 
 .page,
