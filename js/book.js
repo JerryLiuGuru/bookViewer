@@ -10,7 +10,7 @@ var choose = document.getElementById("choose"),
 var files, 
     dirpath = "file:///Users/jerryliu/Documents/WebFrontendProject/bookViewer/img/";
 
-var bsRatio = (4/5);  // Book to Screen ratio
+var bsRatio = (4/5), scaleUpRatio = 1.05;  // Book to Screen ratio
 function handleResize(img) {
     /*
         A3: 297 x 420mm => 0.707143 ( w/h : aspect ratio)
@@ -40,19 +40,25 @@ function handleResize(img) {
             th = h * (tw/w);            
         }
     }
-
-    rw = Math.round(tw);
-    rh = Math.round(th);    
+    rw = Math.round(tw * scaleUpRatio);
+    rh = Math.round(th * scaleUpRatio);
     bV.style.width = rw + "px";
     bV.style.height = rh + "px";
-    
+    rw2 = Math.round(tw);
+    rh2 = Math.round(th);
     for (i=0; i<allpl.length; i++) {
         if (allpl[i] != null) {
-            allpl[i].width = rw;    //NOTICE: Can't use .style.width = "xxx" + "px";
-            allpl[i].height = rh;   //Since it will remain the original size of inner image.
+            if ( (i <= 1) || (i>=(allpl.length-2)) ) {
+                allpl[i].width = rw-10;    //NOTICE: Can't use .style.width = "xxx" + "px";
+                allpl[i].height = rh-10;   //Since it will remain the original size of inner image.                                
+            } else {
+                //allpl[i].style="top: " + ((rh-rh2)/2) + "; left: " + ((rw-rw2)/2) 
+                allpl[i].width = rw-10;    //NOTICE: Can't use .style.width = "xxx" + "px";
+                allpl[i].height = rh-10;   //Since it will remain the original size of inner image.                
+            }   
         }
     }
-    return [rw, rh];
+    return [rw-10, rh-10, rw-10, rh-10];
 }
 
 var debugMode = true;
@@ -72,6 +78,17 @@ function showBookViewer() {
 
 var sA = [];    // to store the size(width & height) of cover image for the other imgs.
 
+var canPos = {
+    c_b: [-1, -1, -1, -1],
+    pgs: [-1, -1, -1, -1]
+};
+var shaCfg = {
+    widPer: 0.05,   //shadow width for inner part of a page
+    spw: -1,        //real shadow with after bookViewer width is decided.
+    rect: [ [-1, -1, -1, -1], [-1, -1, -1, -1] ],
+    Pg_cs: [ ["#333333","#aaaaaa"], ["#999999", "#444444"] ],   // right and left
+    grd: [ [-1, -1, -1, -1], [-1, -1, -1, -1] ]
+};
 function onLoad(){
     //debugger
     //input.value = dirpath;
@@ -113,6 +130,15 @@ function onLoad(){
         ctx2.drawImage(c0, 0, 0, sA[0], sA[1]);
         
         showBookViewer();
+        
+        shaCfg.spw = Math.floor(sA[0]*shaCfg.widPer);
+        shaCfg.rect = [ [0, 0, shaCfg.spw, sA[1]],
+                        [sA[0]-shaCfg.spw, 0, sA[0], sA[1]] ];
+        shaCfg.grd = [ [ 0, 0, shaCfg.spw, 0],
+                        [ sA[0]-shaCfg.spw, 0, sA[0], 0] ];
+
+        canPos.c_b = [0, 0, sA[0], sA[1]];
+        canPos.pgs = [ (sA[0]-sA[2])/2, (sA[1]-sA[3])/2, sA[2], sA[3]];
         //alert(sA[0] + "," + sA[1]);
     }
     
@@ -266,7 +292,7 @@ function chg_2_ori_size(pg) {
 
 var tTime = [0.8, 0.8];
 function book_click(event) {    
-    // debugger    
+    // debugger
     imInd =  (imInd < 0) ? 0 : imInd;
     imInd =  (imInd >= imCnt) ? (imCnt-1) : imInd;
     
@@ -275,18 +301,44 @@ function book_click(event) {
     //Add OnLoad event handler for each image
     if ( allpp[1].onload == null) {
         $("#c0").off("load");
+
         for (var i = 0; i < allpp.length; i++) {
-            allpp[i].src = imgPath + bimgNameArray[i]; 
+            allpp[i].src = imgPath + bimgNameArray[i];
+            if ( (i<=1) || (i>=(allpp.length-2)) ) {
+                sx = canPos.c_b[0];
+                sy = canPos.c_b[1];
+                ex = canPos.c_b[2];
+                ey = canPos.c_b[3];
+            } else {
+                sx = canPos.pgs[0];
+                sy = canPos.pgs[1];
+                ex = canPos.pgs[2];
+                ey = canPos.pgs[3];
+            }
             allpp[i].onload = function(event) {
                 sE = event.srcElement;
                 pE = sE.parentElement;
                 var ctx2 = pE.getContext('2d');
-                ctx2.drawImage(sE, 0, 0, sA[0], sA[1]);
+                ctx2.drawImage(sE, sx, sy, ex, ey);
+
+                tId = sE.id;
+                imIndM2 = parseInt(tId[1]) % 2;
+                te = shaCfg.grd[ imIndM2 ];
+                tlg=ctx2.createLinearGradient(te[0], te[1], te[2], te[3]);
+                te = shaCfg.Pg_cs[ imIndM2 ];
+                tlg.addColorStop(0, te[0]);
+                tlg.addColorStop(1, te[1]);
+
+                if ( (tId != "c0") && (tId != "b1" ) ) {
+                    ctx2.fillStyle=tlg;
+                    te = shaCfg.rect[ imIndM2 ];
+                    ctx2.fillRect(te[0], te[1], te[2], te[3]);                    
+                }                
                 //alert(sA[0] + "," + sA[1]);
                 ts = sE.src;
                 ts = ts.substring(ts.lastIndexOf("/")+1);
                 console.log("img '" + sE.id + ":" + ts + "' start loaded.")
-            };    
+            };
         }
     }
 

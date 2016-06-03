@@ -216,7 +216,6 @@ canvas {
 .bimg {
 	margin: 0;
 	padding: 0;
-	border: 0;
 }
 
 /*
@@ -283,27 +282,53 @@ canvas {
 .book_spine,
 .hardcover_front canvas,
 .hardcover_back canvas,
-.page canvas,
 .book_spine li {
 	position: absolute;
 	top: 0;
 	left: 0;
-	/*width: 100%;
-	height: 100%;*/
+	padding: 0;
+	margin: 0;
+	width: 100%;
+	height: 100%;
 	/*-webkit-transform-style: flat;
 	-moz-transform-style: flat;
 	transform-style: flat;*/
-	transition: all 5s ease;
+	transition: all 1s ease;
 }
 
-/*
+.hardcover_front {
+	border: 5px solid #ff0000; 
+	border: 5px solid #333333;
+	border: 5px solid #aaaaaa;
+	width: 100%;
+	height: 100%;
+}
+
+.hardcover_back {
+	border: 5px solid #0000ff;
+	width: 100%;
+	height: 100%;
+}
+
+.page {
+	/*border: 2px solid #00ff00;*/
+	width: 100%;
+	height: 100%;
+}
+
+.page canvas {
+	/*border: 3px solid #ff00ff;*/
+	background-color: #000000;
+	transition: all 1s ease;
+}
+
 .hardcover_front,
 .hardcover_back,
 .page {
 	-webkit-transform-origin: 0% 100%;
 	-moz-transform-origin: 0% 100%;
 	transform-origin: 0% 100%;
-}*/
+}
 
 /*.hardcover_front {
 	-webkit-transition: all 0.8s ease, z-index 0.01s;
@@ -496,16 +521,6 @@ canvas {
 	-webkit-transform: rotateX(90deg) rotateZ(90deg) translateZ(-210px) translateX(2px) translateY(-6px);
 	-moz-transform: rotateX(90deg) rotateZ(90deg) translateZ(-210px) translateX(2px) translateY(-6px);
 	transform: rotateX(90deg) rotateZ(90deg) translateZ(-560px) translateX(2px) translateY(-6px);	/* modify here */
-}
-
-.page,
-.page > canvas {
-	position: absolute;
-	top: 0;
-	left: 0;
-	/*-webkit-transform-style: preserve-3d;
-	-moz-transform-style: preserve-3d;
-	transform-style: preserve-3d;*/
 }
 
 /*.page {
