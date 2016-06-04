@@ -85,7 +85,7 @@ var canPos = {
     pgs: [-1, -1, -1, -1]
 };
 var shaCfg = {
-    widPer: 0.04,   //shadow width for inner part of a page
+    widPer: 0.06,   //shadow width for inner part of a page
     spw: -1,        //real shadow with after bookViewer width is decided.
     rect: [ [-1, -1, -1, -1], [-1, -1, -1, -1] ],
     Pg_cs: [ ["#888", "#fff"], ["#fff","#888"] ],   // right and left
@@ -136,8 +136,8 @@ function onLoad(){
         shaCfg.spw = Math.floor(sA[0]*shaCfg.widPer);
         shaCfg.rect = [ [0, brderWid, shaCfg.spw, sA[1]-brderWid],
                         [sA[0]-shaCfg.spw, brderWid, sA[0], sA[1]-brderWid] ];
-        shaCfg.grd = [ [ 0, 5, shaCfg.spw, 5],
-                        [ sA[0]-shaCfg.spw, 5, sA[0], 5] ];
+        shaCfg.grd = [ [ 0, brderWid, shaCfg.spw, brderWid],
+                        [ sA[0]-shaCfg.spw, brderWid, sA[0], brderWid] ];
 
         canPos.c_b = [0, 0, sA[0], sA[1]];
         canPos.pgs = [ (sA[0]-sA[2])/2, (sA[1]-sA[3])/2, sA[2], sA[3]];
