@@ -10,7 +10,7 @@ var choose = document.getElementById("choose"),
 var files, 
     dirpath = "file:///Users/jerryliu/Documents/WebFrontendProject/bookViewer/img/";
 
-var bsRatio = (4/5), scaleUpRatio = 1.05;  // Book to Screen ratio
+var bsRatio = (4/5), scaleUpRatio = 1.05, brderWid = 5;  // Book to Screen ratio
 function handleResize(img) {
     /*
         A3: 297 x 420mm => 0.707143 ( w/h : aspect ratio)
@@ -46,19 +46,21 @@ function handleResize(img) {
     bV.style.height = rh + "px";
     rw2 = Math.round(tw);
     rh2 = Math.round(th);
+    tbdrw = (brderWid*2);
+    tbdrw2 = (brderWid*2);
     for (i=0; i<allpl.length; i++) {
         if (allpl[i] != null) {
             if ( (i <= 1) || (i>=(allpl.length-2)) ) {
-                allpl[i].width = rw-10;    //NOTICE: Can't use .style.width = "xxx" + "px";
-                allpl[i].height = rh-10;   //Since it will remain the original size of inner image.                                
+                allpl[i].width = rw-tbdrw;    //NOTICE: Can't use .style.width = "xxx" + "px";
+                allpl[i].height = rh-tbdrw;   //Since it will remain the original size of inner image.                                
             } else {
                 //allpl[i].style="top: " + ((rh-rh2)/2) + "; left: " + ((rw-rw2)/2) 
-                allpl[i].width = rw-10;    //NOTICE: Can't use .style.width = "xxx" + "px";
-                allpl[i].height = rh-10;   //Since it will remain the original size of inner image.                
+                allpl[i].width = rw-tbdrw2;    //NOTICE: Can't use .style.width = "xxx" + "px";
+                allpl[i].height = rh-tbdrw2;   //Since it will remain the original size of inner image.                
             }   
         }
     }
-    return [rw-10, rh-10, rw-10, rh-10];
+    return [rw-tbdrw, rh-tbdrw, rw-tbdrw2, rh-tbdrw2];
 }
 
 var debugMode = true;
@@ -83,10 +85,10 @@ var canPos = {
     pgs: [-1, -1, -1, -1]
 };
 var shaCfg = {
-    widPer: 0.05,   //shadow width for inner part of a page
+    widPer: 0.04,   //shadow width for inner part of a page
     spw: -1,        //real shadow with after bookViewer width is decided.
     rect: [ [-1, -1, -1, -1], [-1, -1, -1, -1] ],
-    Pg_cs: [ ["#333333","#aaaaaa"], ["#999999", "#444444"] ],   // right and left
+    Pg_cs: [ ["#888", "#fff"], ["#fff","#888"] ],   // right and left
     grd: [ [-1, -1, -1, -1], [-1, -1, -1, -1] ]
 };
 function onLoad(){
@@ -132,10 +134,10 @@ function onLoad(){
         showBookViewer();
         
         shaCfg.spw = Math.floor(sA[0]*shaCfg.widPer);
-        shaCfg.rect = [ [0, 0, shaCfg.spw, sA[1]],
-                        [sA[0]-shaCfg.spw, 0, sA[0], sA[1]] ];
-        shaCfg.grd = [ [ 0, 0, shaCfg.spw, 0],
-                        [ sA[0]-shaCfg.spw, 0, sA[0], 0] ];
+        shaCfg.rect = [ [0, brderWid, shaCfg.spw, sA[1]-brderWid],
+                        [sA[0]-shaCfg.spw, brderWid, sA[0], sA[1]-brderWid] ];
+        shaCfg.grd = [ [ 0, 5, shaCfg.spw, 5],
+                        [ sA[0]-shaCfg.spw, 5, sA[0], 5] ];
 
         canPos.c_b = [0, 0, sA[0], sA[1]];
         canPos.pgs = [ (sA[0]-sA[2])/2, (sA[1]-sA[3])/2, sA[2], sA[3]];
@@ -265,7 +267,7 @@ var imCnt = -1, td_normal = 1, td_short = 0.001;
 var mf = 1;   //A good value to display like turning a page.
 
 function chk_LoR_page_adj_pgInd(x,y) {
-    var spineC = document.getElementById("spine").getBoundingClientRect();
+    var spineC = document.getElementById("bookViewer").getBoundingClientRect();
     var isTrue = (y > (spineC.top)) && (y < (spineC.top+bvC.height)),
         isOnL =  ( isTrue && (x > (spineC.left-bvC.width)) && (x < (spineC.left)) ),
         isOnR = ( isTrue && (x > (spineC.left)) && (x < (spineC.left+bvC.width)) );
@@ -304,7 +306,7 @@ function book_click(event) {
 
         for (var i = 0; i < allpp.length; i++) {
             allpp[i].src = imgPath + bimgNameArray[i];
-            if ( (i<=1) || (i>=(allpp.length-2)) ) {
+            /*if ( (i<=0) || (i>=(allpp.length-1)) ) {
                 sx = canPos.c_b[0];
                 sy = canPos.c_b[1];
                 ex = canPos.c_b[2];
@@ -314,14 +316,15 @@ function book_click(event) {
                 sy = canPos.pgs[1];
                 ex = canPos.pgs[2];
                 ey = canPos.pgs[3];
-            }
+            }*/
             allpp[i].onload = function(event) {
                 sE = event.srcElement;
                 pE = sE.parentElement;
-                var ctx2 = pE.getContext('2d');
-                ctx2.drawImage(sE, sx, sy, ex, ey);
-
                 tId = sE.id;
+                var ib_c = ( (tId[0] == "c") || (tId[0] == "b" ) ); 
+                var cP = (ib_c)?canPos.c_b:canPos.pgs;
+                var ctx2 = pE.getContext('2d');
+                ctx2.drawImage(sE, cP[0], cP[1], cP[2], cP[3]);                
                 imIndM2 = parseInt(tId[1]) % 2;
                 te = shaCfg.grd[ imIndM2 ];
                 tlg=ctx2.createLinearGradient(te[0], te[1], te[2], te[3]);
@@ -329,7 +332,8 @@ function book_click(event) {
                 tlg.addColorStop(0, te[0]);
                 tlg.addColorStop(1, te[1]);
 
-                if ( (tId != "c0") && (tId != "b1" ) ) {
+                var i0_last = ( (tId == "c0") || (tId == "b1" ) );
+                if ( !i0_last ) {
                     ctx2.fillStyle=tlg;
                     te = shaCfg.rect[ imIndM2 ];
                     ctx2.fillRect(te[0], te[1], te[2], te[3]);                    
