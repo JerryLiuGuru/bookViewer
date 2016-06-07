@@ -69,7 +69,7 @@ var bvC;
 function showBookViewer() {
     if (debugMode) {    // for debug;
         bV.style.top = (window.screen.availHeight/2 - bV.offsetHeight/2) + "px"; //choose.offsetHeight + output.offsetHeight + 350;
-        bV.style.left = (window.screen.availWidth/2 - bV.offsetWidth/2) + "px";  
+        bV.style.left = (window.screen.availWidth/2 - bV.offsetWidth/1.5) + "px";  
     } else {
         bV.style.top = (window.screen.availHeight/2 - bV.offsetHeight/2) + "px"; //choose.offsetHeight + output.offsetHeight + 350;
         bV.style.left = (window.screen.availWidth/2) + "px";  
@@ -85,10 +85,11 @@ var canPos = {
     pgs: [-1, -1, -1, -1]
 };
 var shaCfg = {
-    widPer: 0.06,   //shadow width for inner part of a page
+    widPer: 0.05,   //shadow width for inner part of a page
     spw: -1,        //real shadow with after bookViewer width is decided.
     rect: [ [-1, -1, -1, -1], [-1, -1, -1, -1] ],
-    Pg_cs: [ ["#888", "#fff"], ["#fff","#888"] ],   // right and left
+    //Pg_cs: [ ["#888", "#fff"], ["#fff","#888"] ],   // right and left
+    Pg_cs: [ ["0", "255"], ["255","0"] ],   // right and left
     grd: [ [-1, -1, -1, -1], [-1, -1, -1, -1] ]
 };
 function onLoad(){
@@ -124,7 +125,7 @@ function onLoad(){
 
     //cover.style = "border: 2px solid #2c3e50";
     c0.src = imgPath + "cover.jpg";
-    //c1.src = imgPath + "1.jpg";
+    c1.src = imgPath + "1.jpg";
 
     c0.onload = function() {
         sA = handleResize(c0);
@@ -142,8 +143,150 @@ function onLoad(){
         canPos.c_b = [0, 0, sA[0], sA[1]];
         canPos.pgs = [ (sA[0]-sA[2])/2, (sA[1]-sA[3])/2, sA[2], sA[3]];
         //alert(sA[0] + "," + sA[1]);
+        
+        //c1.src = imgPath + "1.jpg";
+        //allpl[i].onmousemove = function(event) {
+        cl0.onmousemove = function(event) {
+            var cE = event.srcElement;
+            var cEs = cE.style;
+            var bVTop = Math.floor(bV.style.top.substring(0,bV.style.top.length-2));
+            var bVLeft = Math.floor(bV.style.left.substring(0,bV.style.left.length-2));
+            var cEbrdy = [bVTop, bVTop+cE.height, bVLeft, bVLeft+cE.width];
+            var x = event.clientX;
+            var y = event.clientY;
+            var cp = [event.offsetX, event.offsetY];    // current position in canvas
+            var pe = [cE.width, cE.height];             // page right-bottom endpoint
+            var ce = [ (cp[0]+pe[0])/2, (cp[1]+pe[1])/2];   // center of cp & pe
+            var slope_cp = (cp[1] - pe[1]) / (cp[0] - pe[0]);   // slope of cp & pe   
+            var slope_pb = - (1/slope_cp); // perpendicular bisector 垂直平分線
+            //==> pb equation: y - ce[1] = slope_pb * (x - ce[0])
+            var pbOnTopX = Math.floor( ( (0-ce[1])/slope_pb ) + ce[0] );
+            var pbOnBotX = Math.floor( ( (pe[1]-ce[1])/slope_pb ) + ce[0] );
+            var pbOnLefY = Math.floor( slope_pb * (0-ce[0]) + ce[1] );
+            var pbOnRigY = Math.floor( slope_pb * (pe[0]-ce[0]) + ce[1] );
+            var isValid = [ (pbOnTopX>=0)&&(pbOnTopX<=pe[0]), 
+                            (pbOnBotX>=0)&&(pbOnBotX<=pe[0]),
+                            (pbOnLefY>=0)&&(pbOnLefY<=pe[1]),
+                            (pbOnRigY>=0)&&(pbOnRigY<=pe[1]) ];
+
+            /*console.log(cE.id + "@(" + x + "," + y + ":" + cp[0] + "," + cp[1] + "):(T" + 
+            pbOnTopX + ",B" + pbOnBotX + ",L" + pbOnLefY + ",R" + pbOnRigY + "),(" + 
+            isValid[0] + "," + isValid[1] + "," + isValid[2] + "," + isValid[3] + ")");
+            */
+
+            if (isValid[1] && isValid[3]) { // Valid: Bottom & Right
+                /*if ( (pbOnBotX > (cE.width-50)) || (pbOnRigY > (cE.height-50)) ) {
+                    return;
+                }*/
+                tId = cE.id;
+                /*var ctx = cE.getContext('2d');
+                ctx.beginPath();
+                ctx.moveTo(0, 0);    // (left,top)
+                ctx.lineTo(0, cE.height);    // (left,bottom)
+                ctx.lineTo(pbOnBotX, cE.height);
+                ctx.lineTo(cp[0], cp[1]);
+                ctx.lineTo(cE.width, pbOnRigY);
+                ctx.lineTo(cE.width, 0);
+                ctx.closePath();
+                ctx.fillStyle = ctx.createPattern(c0, "no-repeat");
+                //ctx.fill();
+                //ctx.drawImage(c0, 0, 0);
+                */
+                
+                var ctx2 = cl0.getContext('2d');
+                cl0.width = cl0.width;  // **Trick to clear canvas.
+                ctx2.drawImage(c0, 0, 0, pe[0], pe[1]);
+                //var ll= Math.sqrt( Math.pow(pbOnBotX-cE.width,2) + Math.pow(pbOnRigY-cE.height,2) );
+                // Sin(b) = (cE.width-pbOnBotX) / ll, or 
+                // tan(b) = (cE.width-pbOnBotX)/(cE.height-pbOnRigY)
+
+                var l1= Math.sqrt(Math.pow(pbOnBotX-cp[0],2) + Math.pow(pe[1]-cp[1],2));
+                var l2= Math.sqrt(Math.pow(pe[0]-cp[0],2) + Math.pow(pbOnRigY-cp[1],2));
+                                
+                ctx2.beginPath();
+                ctx2.moveTo(pe[0], pe[1]);
+                ctx2.lineTo(pe[0]-l1,pe[1]);
+                ctx2.lineTo(pe[0],pe[1]-l2);
+                ctx2.closePath();
+                ctx2.fillStyle=ctx2.createPattern(pl0,"no-repeat");
+                ctx2.fill();
+ 
+                var degb = Math.atan( (pe[0]-pbOnBotX)/(pe[1]-pbOnRigY) ); //a value between -PI/2 and PI/2 radians.
+                ctx2.translate(Math.floor(cp[0]), Math.floor(cp[1]));
+                //var n, m;
+                //radians=degrees*Math.PI/180, 2*degb(-PI/2~PI/2)=2*degb/90(-PI/180~PI/180)
+                /*if ((degb*180/Math.PI) >= 45) { // 2b degree   => **: rotate 不能在 translate 之前做
+                    var b2_sub_ninty = degb*2-Math.PI/2;
+                    n = Math.sin(b2_sub_ninty)*cE.height;
+                    m = Math.cos(b2_sub_ninty)*cE.height;                  
+                } else {
+                    m = Math.sin(degb)*cE.height;
+                    n = -Math.cos(degb)*cE.height;
+                }*/ // 座標轉換後，就以新座標軸作用, 所以不用計算以上了
+                ctx2.rotate(degb*2); // 2b degree   => **: rotate 不能在 translate 之前做
+                ctx2.translate(0, -pe[1]);
+                ctx2.beginPath();
+                ctx2.moveTo(0, pe[1]);
+
+                ctx2.lineTo(l1,pe[1]);
+                ctx2.lineTo(0,pe[1]-l2);
+                ctx2.closePath();
+                ctx2.fillStyle=ctx2.createPattern(cl1,"no-repeat");
+                ctx2.fill();
+                //shadow left
+                var shdw = 25;
+                var degc = Math.atan( (l1)/(l2) ); //a value between -PI/2 and PI/2 radians.
+                ctx2.translate(0, pe[1]-l2);
+                ctx2.rotate(-degc);
+                ctx2.beginPath();
+                var l3 = Math.sqrt( Math.pow(l2,2) + Math.pow(l1,2) );
+                var more = shdw*2;
+                ctx2.moveTo(0, -more);
+                ctx2.lineTo(0, l3+more);
+                ctx2.lineTo(-shdw, l3+more);
+                ctx2.lineTo(-shdw, -more);
+                ctx2.closePath();
+                var tlg=ctx2.createLinearGradient(-shdw, 0, 0, 0);
+                te = shaCfg.Pg_cs[ 1 ];
+                tlg.addColorStop(0, "rgba("+te[0]+","+te[0]+","+te[0]+",0.01)");
+                tlg.addColorStop(1, "rgba("+te[1]+","+te[1]+","+te[1]+",0.5)");
+                ctx2.fillStyle=tlg;
+                ctx2.fill();
+                
+                //shadow right
+                ctx2.beginPath();
+                ctx2.moveTo(0, -more);
+                ctx2.lineTo(0, l3+more);
+                ctx2.lineTo(shdw, l3+more);
+                ctx2.lineTo(shdw, -more);
+                ctx2.closePath();
+                tlg=ctx2.createLinearGradient(0, 0, shdw, 0);
+                te = shaCfg.Pg_cs[ 0 ];
+                tlg.addColorStop(0, "rgba("+te[0]+","+te[0]+","+te[0]+",0.5)");
+                tlg.addColorStop(1, "rgba("+te[1]+","+te[1]+","+te[1]+",0.01)");
+                ctx2.fillStyle=tlg;
+                ctx2.fill();
+
+
+                /*console.log(cE.id + "@(" + x + "," + y + ":" + cp[0] + "," + cp[1] + 
+                    "),trans(" + Math.floor(m) + "," + Math.floor(n) + "),degb=" + 
+                    Math.round(degb*180/Math.PI) + ",2b-90=" + b2_sub_ninty);*/
+            }
+            //console.log(cE.id + "@(" + x + "," + y + ")");
+        }
     }
-    
+    /*
+    c1.onload = function() {
+        var ctx2 = cc[1].getContext('2d');
+        ctx2.drawImage(c1, 0, 0, sA[0], sA[1]);
+        
+        p0.src = imgPath + "2.jpg";
+        p0.onload = function() {
+            var ctx2 = pl0.getContext('2d');
+            ctx2.drawImage(p0, 0, 0, sA[0], sA[1]);            
+        }
+    } 
+    */   
     //alert(cl0.clientWidth + "," + cl0.clientHeight);
     //alert(cl0.style.width + "," + cl0.style.height);
     //alert(canvas.clientWidth + "," + canvas.clientHeight);
@@ -292,6 +435,15 @@ function chg_2_ori_size(pg) {
     pP.style["transform"] = tv;
 }
 
+function doCanvasMouseMove(event) {
+    var x = event.clientX;
+    var y = event.clientY;
+    
+    console.log("@(" + x + "," + y + ")");
+    
+}
+
+
 var tTime = [0.8, 0.8];
 function book_click(event) {    
     // debugger
@@ -303,7 +455,7 @@ function book_click(event) {
     //Add OnLoad event handler for each image
     if ( allpp[1].onload == null) {
         $("#c0").off("load");
-
+        
         for (var i = 0; i < allpp.length; i++) {
             allpp[i].src = imgPath + bimgNameArray[i];
             /*if ( (i<=0) || (i>=(allpp.length-1)) ) {
@@ -317,6 +469,7 @@ function book_click(event) {
                 ex = canPos.pgs[2];
                 ey = canPos.pgs[3];
             }*/
+            
             allpp[i].onload = function(event) {
                 sE = event.srcElement;
                 pE = sE.parentElement;
@@ -329,8 +482,8 @@ function book_click(event) {
                 te = shaCfg.grd[ imIndM2 ];
                 tlg=ctx2.createLinearGradient(te[0], te[1], te[2], te[3]);
                 te = shaCfg.Pg_cs[ imIndM2 ];
-                tlg.addColorStop(0, te[0]);
-                tlg.addColorStop(1, te[1]);
+                tlg.addColorStop(0, "rgba("+te[0]+","+te[0]+","+te[0]+",0.1)");
+                tlg.addColorStop(1, "rgba("+te[1]+","+te[1]+","+te[1]+",0.5)");
 
                 var i0_last = ( (tId == "c0") || (tId == "b1" ) );
                 if ( !i0_last ) {
@@ -341,7 +494,7 @@ function book_click(event) {
                 //alert(sA[0] + "," + sA[1]);
                 ts = sE.src;
                 ts = ts.substring(ts.lastIndexOf("/")+1);
-                console.log("img '" + sE.id + ":" + ts + "' start loaded.")
+                //console.log("img '" + sE.id + ":" + ts + "' start loaded.")
             };
         }
     }
