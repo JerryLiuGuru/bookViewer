@@ -8,7 +8,7 @@
   </head>
   <body onload="onLoad();">
     
-    <table>
+    <table id="dZtable">
       <tr>
         <td>
         <!--<div id="choose" class="select">      
@@ -45,19 +45,16 @@
       </tr>
     </table>
     <p></p>
-    
-    
-        
 
     <!--<canvas id="tc" width="460" height="660" style="border: 2px solid #2c3e50; border-color: #ffff00;"></canvas>-->
     
-    <figure class="book" id="bookViewer" style="visibility: visible;">
+    <div class="book" id="bookViewer" style="visibility: visible;">
       <!-- Front -->
       <div class="hardcover_front" id="cover">
         <canvas id="cl0" style="z-index: 1" moz-opaque>
           <img class="bimg" id="c0" src="#" alt="" style="display: none;">      
         </canvas>
-        <canvas id="cl1" style="transform: scaleX(-1);" moz-opaque>
+        <canvas id="cl1" style="transform: scaleX(-1); border: 1px solid #34495e;" moz-opaque>
           <img class="bimg" id="c1" src="#" alt="" style="display: none;">
         </canvas>
       </div>
@@ -98,7 +95,7 @@
 
       <!-- Back -->
       <div class="hardcover_back" id="back">
-        <canvas id="bl0" moz-opaque>
+        <canvas id="bl0" moz-opaque style="border: 1px solid #34495e;">
           <img class="bimg" id="b0" src="#" alt="" style="display: none;">
         </canvas>
         <canvas id="bl1" style="transform: scaleX(-1);" moz-opaque>
@@ -111,13 +108,8 @@
         <li id="sl1"></li>
         <li id="sl2"></li>
       </ul>-->
-      
-      <!--<figcaption>
-        <h1>Papelucho Perdido</h1>
-        <span>By Marcela Paz</span>
-        <p>Fennel bamboo shoot pea sprouts rutabaga parsnip green bean gram wattle seed lentil horseradish nori. Grape lettuce turnip greens.</p>
-      </figcaption>-->
-    </figure>
+
+    </div>
 
     <script src="js/jquery.min.js"></script>
     <script src="js/filesystemapi.js"></script>

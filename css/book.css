@@ -326,7 +326,7 @@ canvas {
 }
 
 .page canvas {
-	/*border: 3px solid #ff00ff;*/
+	border: 1px solid #34495e;
 	background-color: #000000;
 	transition: all 1s ease;
 }
