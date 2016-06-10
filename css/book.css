@@ -95,6 +95,15 @@ a {
     border: 1px solid #ccc;
 }
 
+.dZtable {
+	position: absolute;
+	top: 0;
+	left: 0;
+	padding: 0;
+	margin: 0;
+	width: 100%;
+}
+
 .dropzone {
 	width: 300px;
 	margin-top: 10px;
@@ -107,6 +116,7 @@ a {
     text-align: center;
     font: 20pt bold 'Vollkorn';
     color: #bbb;
+	z-index: 99999;
 }
 
 /* ///////////////////////////////////////////////////
@@ -133,10 +143,10 @@ Table of Contents
 
 .book {
 	position: absolute; /*relative;*/
-	/*top: 100px; 
-	left: 400px;
-	width: 60px; 	
-	height: 60px;*/	/* modify here */
+	top: 0px; 
+	left: 0px;
+	width: 100%; 	
+	height: 100%;	/* modify here */
 	-webkit-perspective: 1000px;
 	-moz-perspective: 1000px;
 	perspective: 1000px;
@@ -274,8 +284,6 @@ Table of Contents
 .page, 
 .hardcover_back,
 .book_spine,
-.hardcover_front canvas,
-.hardcover_back canvas,
 .book_spine li {
 	position: absolute;
 	top: 0;
@@ -297,30 +305,6 @@ canvas {
 	left: 0;
 	padding: 0;
 	margin: 0;
-}
-
-.hardcover_front {
-	/*border: 5px solid #ff0000; 
-	/*border: 5px solid linear-gradient(left, #e1ddd8 0%, #fffbf6 100%);*/
-	/*background: linear-gradient(left, #e1ddd8 0%, #fffbf6 100%);*/
-	border: solid #fffbf6; 
-	border-width: 5px 5px 5px 0px;	/*top, right, bottom, left*/
-	width: 100%;
-	height: 100%;
-}
-
-.hardcover_back {
-	/*border: 5px solid #0000ff;*/
-	border: solid #fffbf6; 
-	border-width: 5px 5px 5px 0px;	/*top, right, bottom, left*/
-	width: 100%;
-	height: 100%;
-}
-
-.page {
-	/*background: #ecf0f1;*/
-	border: solid #fffbf6; 
-	border-width: 5px 5px 5px 0px;	/*top, right, bottom, left*/
 	width: 100%;
 	height: 100%;
 }
@@ -328,7 +312,7 @@ canvas {
 .page canvas {
 	border: 1px solid #34495e;
 	background-color: #000000;
-	transition: all 1s ease;
+	/*transition: all 1s ease;*/
 }
 
 .hardcover_front,

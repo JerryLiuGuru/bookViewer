@@ -61,8 +61,8 @@ function handleResize(img) {
     }
     rw = Math.round(tw * scaleUpRatio);
     rh = Math.round(th * scaleUpRatio);
-    bV.style.width = rw + "px";
-    bV.style.height = rh + "px";
+    //bV.style.width = rw + "px";
+    //bV.style.height = rh + "px";
     rw2 = Math.round(tw);
     rh2 = Math.round(th);
     tbdrw = (brderWid*2);
@@ -70,12 +70,12 @@ function handleResize(img) {
     for (i=0; i<allpl.length; i++) {
         if (allpl[i] != null) {
             if ( (i <= 1) || (i>=(allpl.length-2)) ) {
-                allpl[i].width = rw-tbdrw;    //NOTICE: Can't use .style.width = "xxx" + "px";
-                allpl[i].height = rh-tbdrw;   //Since it will remain the original size of inner image.                                
+                allpl[i].width = window.screen.availWidth; //rw-tbdrw;    //NOTICE: Can't use .style.width = "xxx" + "px";
+                allpl[i].height = window.screen.availHeight; //rh-tbdrw;   //Since it will remain the original size of inner image.                                
             } else {
                 //allpl[i].style="top: " + ((rh-rh2)/2) + "; left: " + ((rw-rw2)/2) 
-                allpl[i].width = rw-tbdrw2;    //NOTICE: Can't use .style.width = "xxx" + "px";
-                allpl[i].height = rh-tbdrw2;   //Since it will remain the original size of inner image.                
+                allpl[i].width = window.screen.availWidth; //rw-tbdrw2;    //NOTICE: Can't use .style.width = "xxx" + "px";
+                allpl[i].height = window.screen.availHeight; //rh-tbdrw2;   //Since it will remain the original size of inner image.                
             }   
         }
     }
@@ -83,33 +83,32 @@ function handleResize(img) {
 }
 
 var debugMode = true;
-var bV = document.getElementById("bookViewer");
-var bvC;
+var sX = -1, sY = -1;
 function showBookViewer() {
-    /*dZ = document.getElementById("dZtable");
+    var bV = document.getElementById("bookViewer");
+    var bvC;
+
+    dZ = document.getElementById("dz_table");
     dZ.style["z-index"] = 9999;
     
-    bV.style.top = 0;
-    bV.style.left = 0;
-    bV.style.width = window.screen.availWidth + "px";
-    bV.style.height = window.screen.availHeight + "px";
     bV.style["z-index"] = 1;
-    for (var i=0; i<allpl.length; i++) {
+    //for (var i=0; i<allpl.length; i++) {
         if (debugMode) {    // for debug;
-            allpl[i].style.top = (window.screen.availHeight/2 - bV.offsetHeight/2.5) + "px"; //choose.offsetHeight + output.offsetHeight + 350;
-            allpl[i].style.left = (window.screen.availWidth/2 - bV.offsetWidth/1.5) + "px";  
+            sY = Math.floor(window.screen.availHeight/2 - sA[1]/2.5); //choose.offsetHeight + output.offsetHeight + 350;
+            sX = Math.floor(window.screen.availWidth/2 - sA[0]/1.5);  
         } else {
-            allpl[i].style.top = (window.screen.availHeight/2 - bV.offsetHeight/2.5) + "px"; //choose.offsetHeight + output.offsetHeight + 350;
-            allpl[i].style.left = (window.screen.availWidth/2) + "px";  
+            sY = Math.floor(window.screen.availHeight/2 - sA[1]/2.5); //choose.offsetHeight + output.offsetHeight + 350;
+            sX = Math.floor(window.screen.availWidth/2);  
         }
-    }*/
+    //}
+    /*
     if (debugMode) {    // for debug;
-            bV.style.top = (window.screen.availHeight/2 - bV.offsetHeight/2.5) + "px"; //choose.offsetHeight + output.offsetHeight + 350;
-            bV.style.left = (window.screen.availWidth/2 - bV.offsetWidth/1.5) + "px";  
-        } else {
-            bV.style.top = (window.screen.availHeight/2 - bV.offsetHeight/2.5) + "px"; //choose.offsetHeight + output.offsetHeight + 350;
-            bV.style.left = (window.screen.availWidth/2) + "px";  
-    }
+        bV.style.top = (window.screen.availHeight/2 - bV.offsetHeight/2.5) + "px"; //choose.offsetHeight + output.offsetHeight + 350;
+        bV.style.left = (window.screen.availWidth/2 - bV.offsetWidth/1.5) + "px";  
+    } else {
+        bV.style.top = (window.screen.availHeight/2 - bV.offsetHeight/2.5) + "px"; //choose.offsetHeight + output.offsetHeight + 350;
+        bV.style.left = (window.screen.availWidth/2) + "px";  
+    }*/
     bV.style["visibility"] = "visible";
     bvC = document.getElementById("bookViewer").getBoundingClientRect();
 }
@@ -123,9 +122,14 @@ function page_mousedown(event) {
     dY = event.clientY;
     var bC = event.target;
     var tId = bC.id;
-    if ( (tId[0] == "c") || (tId[0] == "b") ) { // cover & back page don't turn.
+    chk_LoR_page_adj_pgInd(dX, dY, tId);
+    
+    if ( (!isOnLpg) && (!isOnRpg) ) {
         return;
     }
+    /*if ( (tId[0] == "c") || (tId[0] == "b") ) { // cover & back page don't turn.
+        return;
+    }*/
     startC = bC;
     var pnum = parseInt(tId[2]);
     if ((pnum%2)==0) {
@@ -137,6 +141,7 @@ function page_mousedown(event) {
         pC=(pnum==(pl.length-1))?bc[0]:pl[pnum+1];
         nnC = (pnum==1)?cc[1]:pl[pnum-2];
     }
+    console.log("pC,sC,nC,nnC=" + pC.id + "," + startC.id + "," + nC.id + "," + nnC.id);
 }
 
 var showItvl = 10, minToShow = 10;
@@ -173,7 +178,7 @@ function page_mouseup(event) {
         book_click(event);
         return;
     }
-    chk_LoR_page_adj_pgInd(event.clientX,event.clientY);
+    chk_LoR_page_adj_pgInd(event.clientX,event.clientY,tId);
     var desPoint = null;
     if (isOnLpg) {
         dP = [0, pC.height];        
@@ -185,37 +190,43 @@ function page_mouseup(event) {
 }
 
 function page_mousemove(event) { // Actuall, during dragging.
-    if ( (isMouseUp) || (startC==null)) {
+    /*if ( (isMouseUp) || (startC==null)) {
+        return;
+    }*/
+    chk_LoR_page_adj_pgInd(event.clientX, event.clientY, event.target.id);    
+    if ( (!isOnRpg) ) {
         return;
     }
+
+    startC = cl0; nC = cl1; nnC = pl0;
     doPagePositionByMouseCor(startC, nC, nnC, event.offsetX, event.offsetY);
     //console.log(cE.id + "@(" + x + "," + y + ")");    
 }
 
 var tPbrdercolor = "#34495e";
 function doPagePositionByMouseCor(cE, nC, nnC, ofsX, ofsY) {
-    var bVTop = Math.floor(bV.style.top.substring(0,bV.style.top.length-2));
-    var bVLeft = Math.floor(bV.style.left.substring(0,bV.style.left.length-2));
-    var cEbrdy = [bVTop, bVTop+cE.height, bVLeft, bVLeft+cE.width];
+    //var cTop = sY;
+    //var cLeft = sX;
+    //var cEbrdy = [cTop, cTop+sA[1], cLeft, cLeft+sA[0]];
     var cp = [ofsX, ofsY];    // current position in canvas
-    var pe = [cE.width, cE.height];             // page right-bottom endpoint
+    var pe = [sX+sA[0], sY+sA[1]];             // page right-bottom endpoint
     var ce = [ (cp[0]+pe[0])/2, (cp[1]+pe[1])/2];   // center of cp & pe
     var slope_cp = (cp[1] - pe[1]) / (cp[0] - pe[0]);   // slope of cp & pe   
     var slope_pb = - (1/slope_cp); // perpendicular bisector 垂直平分線
     //==> pb equation: y - ce[1] = slope_pb * (x - ce[0])
-    var pbOnTopX = Math.floor( ( (0-ce[1])/slope_pb ) + ce[0] );
+    var pbOnTopX = Math.floor( ( (sY-ce[1])/slope_pb ) + ce[0] );
     var pbOnBotX = Math.floor( ( (pe[1]-ce[1])/slope_pb ) + ce[0] );
-    var pbOnLefY = Math.floor( slope_pb * (0-ce[0]) + ce[1] );
+    var pbOnLefY = Math.floor( slope_pb * (sX-ce[0]) + ce[1] );
     var pbOnRigY = Math.floor( slope_pb * (pe[0]-ce[0]) + ce[1] );
-    var isValid = [ (pbOnTopX>=0)&&(pbOnTopX<=pe[0]), 
-                    (pbOnBotX>=0)&&(pbOnBotX<=pe[0]),
-                    (pbOnLefY>=0)&&(pbOnLefY<=pe[1]),
-                    (pbOnRigY>=0)&&(pbOnRigY<=pe[1]) ];
+    var isValid = [ (pbOnTopX>=sX)&&(pbOnTopX<=pe[0]), 
+                    (pbOnBotX>=sX)&&(pbOnBotX<=pe[0]),
+                    (pbOnLefY>=sY)&&(pbOnLefY<=pe[1]),
+                    (pbOnRigY>=sY)&&(pbOnRigY<=pe[1]) ];
     var pnum = parseInt(cE.id[2]);
-    /*console.log(cE.id + "@(" + x + "," + y + ":" + cp[0] + "," + cp[1] + "):(T" + 
+    console.log(cE.id + "@(" + ofsX + "," + ofsY + ":" + cp[0] + "," + cp[1] + "):(T" + 
     pbOnTopX + ",B" + pbOnBotX + ",L" + pbOnLefY + ",R" + pbOnRigY + "),(" + 
     isValid[0] + "," + isValid[1] + "," + isValid[2] + "," + isValid[3] + ")");
-    */
+    
 
     if ( (isValid[1] && isValid[3]) || (isValid[0] && isValid[1]) ) { // Valid: Bottom & Right
         /*if ( (pbOnBotX > (cE.width-50)) || (pbOnRigY > (cE.height-50)) ) {
@@ -238,8 +249,9 @@ function doPagePositionByMouseCor(cE, nC, nnC, ofsX, ofsY) {
         
         ctx2 = cE.getContext('2d');
         cE.width = cE.width;  // **Trick to clear canvas.
-        ctx2.drawImage(pi[pnum], 0, 0, pe[0], pe[1]);
-        
+        //ctx2.drawImage(pi[pnum], sX, sY, sA[0], sA[1]);
+        ctx2.drawImage(c0, sX, sY, sA[0], sA[1]);
+
         if ( (Math.abs(cp[0]-pe[0]) <= minToShow) && (Math.abs(cp[1]-pe[1]) <= minToShow) ) {
             return;
         }
@@ -257,7 +269,10 @@ function doPagePositionByMouseCor(cE, nC, nnC, ofsX, ofsY) {
         ctx2.closePath();
         ctx2.fillStyle=ctx2.createPattern(nnC,"no-repeat");
         ctx2.fill();
+        ctx2.strokeStyle = "red";
+        ctx2.stroke();
 
+        //ctx2 = cE.getContext("2d");
         var degb = Math.atan( (pe[0]-pbOnBotX)/(pe[1]-pbOnRigY) ); //a value between -PI/2 and PI/2 radians.
         ctx2.translate(Math.floor(cp[0]), Math.floor(cp[1]));
         //var n, m;
@@ -271,44 +286,59 @@ function doPagePositionByMouseCor(cE, nC, nnC, ofsX, ofsY) {
             n = -Math.cos(degb)*cE.height;
         }*/ // 座標轉換後，就以新座標軸作用, 所以不用計算以上了
         ctx2.rotate(degb*2); // 2b degree   => **: rotate 不能在 translate 之前做
-        ctx2.translate(0, -pe[1]);
+        ctx2.translate(-sX, -pe[1]);
         ctx2.beginPath();
-        /*if (isValid[0] && isValid[1]) {
-            ctx2.moveTo(0,0);
-        } else {*/
-            ctx2.moveTo(0,pe[1]-l2);   
-        //}
-        
-        ctx2.lineTo(0, pe[1]);
-        ctx2.lineTo(l1,pe[1]);
-        ctx2.strokeStyle=tPbrdercolor;
-        ctx2.stroke();
+        if (isValid[0] && isValid[1]) {
+            ctx2.moveTo(sX,sY);
+        } else {
+            ctx2.moveTo(sX,pe[1]-l2);   
+        }
+        ctx2.lineTo(sX, pe[1]);
+        ctx2.lineTo(sX+l1,pe[1]);
+        var dif, dif2;
+        if (isValid[0] && isValid[1]) {
+            dif = Math.floor(Math.abs(pbOnRigY-sY)*Math.tan(degb));
+            ctx2.lineTo(sX+dif,sY);
+            ctx2.lineTo(sX,sY);            
+            dif = Math.floor(dif/Math.sin(degb));
+            dif2 = (pbOnRigY-sY);
+        } else {
+            dif = 0;
+            dif2 = (pbOnRigY-sY);
+        }
         ctx2.closePath();
         ctx2.fillStyle=ctx2.createPattern(nC,"no-repeat");
         ctx2.fill();
+        ctx2.strokeStyle=tPbrdercolor;
+        ctx2.stroke();
+
         //shadow left
         var shdw = 55;
-        var degc = Math.atan( (l1)/(l2) ); //a value between -PI/2 and PI/2 radians.
-        ctx2.translate(0, pe[1]-l2);
-        ctx2.rotate(-degc);        
+        //var degc = Math.atan( (l1)/(l2) ); //a value between -PI/2 and PI/2 radians.
+        console.log(dif2 + "," + dif + ":" + degb + "," + degc);
+        ctx2.translate(0, dif2);
+        ctx2.rotate(-degb); 
+        ctx2.translate(0, dif);
         var l3 = Math.sqrt( Math.pow(l2,2) + Math.pow(l1,2) );
-        var more = shdw*2;
+        var more = 0, shdw2 = -1;
         
         for (var i = 0, j = -1, k = 1; i <= 1; i++, j *= -1, k--) {
+            shdw2 = 2*shdw;
             ctx2.beginPath();        
-            ctx2.moveTo(0, -more);
-            ctx2.lineTo(0, l3+more);
-            ctx2.lineTo(j*shdw, l3+more);
-            ctx2.lineTo(j*shdw, -more);
+            ctx2.moveTo(sX, sY-more);
+            ctx2.lineTo(sX, sY+l3+more);
+            ctx2.lineTo(sX+j*shdw2, sY+l3+more);
+            ctx2.lineTo(sX+j*shdw2, sY-more);
             ctx2.closePath();
-            var tlg=(i == 0)?ctx2.createLinearGradient(-shdw, 0, 0, 0):ctx2.createLinearGradient(0, 0, shdw, 0);
+            var tlg=(i == 0)?ctx2.createLinearGradient(sX-shdw2, sY, sX, sY):ctx2.createLinearGradient(sX, sY, sX+shdw2, sY);
             te = shaCfg.Pg_cs[ k ];
-            tlg.addColorStop(0, "rgba("+te[0]+","+te[0]+","+te[0]+","+((i==0)?0.01:0.5)+")");
-            tlg.addColorStop(0.5, "rgba("+te[i]+","+te[i]+","+te[i]+",0.05)");
-            tlg.addColorStop(1, "rgba("+te[1]+","+te[1]+","+te[1]+","+((i==1)?0.01:0.5)+")");
+            tlg.addColorStop(0, "rgba("+te[0]+","+te[0]+","+te[0]+","+((i==0)?0.01:0.4)+")");
+            tlg.addColorStop(((i==0)?0.6:0.5), "rgba("+te[i]+","+te[i]+","+te[i]+","+((i==0)?0.1:0.1)+")");
+            tlg.addColorStop(1, "rgba("+te[1]+","+te[1]+","+te[1]+","+((i==0)?0.4:0.01)+")");
             ctx2.fillStyle=tlg;
             ctx2.fill();
         }
+        //nC.style["z-index"] = zindv;
         /*
         ctx2.beginPath();
         ctx2.moveTo(0, -more);
@@ -382,7 +412,7 @@ function onLoad(){
             $(allpl[j+1]).off("onmousemove");
             $(allpl[j]).on("onmousemove", page_mousemove);
             $(allpl[j+1]).on("onmousemove", page_mousemove);*/
-        }        
+        }       
         tP.style["z-index"] = -j;
         
         for (k = 0; k <= 1; k++) {
@@ -403,14 +433,12 @@ function onLoad(){
     
     //cover.style = "border: 2px solid #2c3e50";
     c0.src = imgPath + "cover.jpg";
-    //c1.src = imgPath + "1.jpg";
 
     c0.onload = function() {
         sA = handleResize(c0);
-        var ctx2 = cc[0].getContext('2d');
-        ctx2.drawImage(c0, 0, 0, sA[0], sA[1]);
-        
+        var ctx2 = cc[0].getContext('2d');        
         showBookViewer();
+        ctx2.drawImage(c0, sX, sY, sA[0], sA[1]);
         
         shaCfg.spw = Math.floor(sA[0]*shaCfg.widPer);
         /*shaCfg.rect = [ [0, brderWid, shaCfg.spw, sA[1]-brderWid],
@@ -423,8 +451,8 @@ function onLoad(){
         shaCfg.grd = [ [ 0, 0, shaCfg.spw, 0],
                         [ sA[0]-shaCfg.spw, 0, sA[0], 0] ];
 
-        canPos.c_b = [0, 0, sA[0], sA[1]];
-        canPos.pgs = [ (sA[0]-sA[2])/2, (sA[1]-sA[3])/2, sA[2], sA[3]];
+        canPos.c_b = [sX, sY, sA[0], sA[1]];
+        canPos.pgs = [ sX+(sA[0]-sA[2])/2, sY+(sA[1]-sA[3])/2, sA[2], sA[3]];
         //alert(sA[0] + "," + sA[1]);
         
         //c1.src = imgPath + "1.jpg";
@@ -433,18 +461,21 @@ function onLoad(){
 
     c0loadedti = setInterval(addOnLoad, 500);
     
-    /*
-    c1.onload = function() {
-        var ctx2 = cc[1].getContext('2d');
-        ctx2.drawImage(c1, 0, 0, sA[0], sA[1]);
+    if (1) {
+        c1.src = imgPath + "1.jpg";
+        c1.onload = function() {
+            var ctx2 = cl1.getContext('2d');
+            ctx2.drawImage(c1, sX, sY, sA[0], sA[1]);
+            
+            p0.src = imgPath + "2.jpg";
+            p0.onload = function() {
+                var ctx2 = pl0.getContext('2d');
+                ctx2.drawImage(p0, sX, sY, sA[0], sA[1]);            
+            }
+        } 
         
-        p0.src = imgPath + "2.jpg";
-        p0.onload = function() {
-            var ctx2 = pl0.getContext('2d');
-            ctx2.drawImage(p0, 0, 0, sA[0], sA[1]);            
-        }
-    } 
-    */   
+    }
+   
     //alert(cl0.clientWidth + "," + cl0.clientHeight);
     //alert(cl0.style.width + "," + cl0.style.height);
     //alert(canvas.clientWidth + "," + canvas.clientHeight);
@@ -466,57 +497,55 @@ function onLoad(){
 };
 
 function addOnLoad() {
-    if (!isImgArrayLoaded) {
-        return;
-    } else {
-        clearTimeout(c0loadedti);
-    }
-    //Add OnLoad event handler for each image
-    if ( allpp[1].onload == null) {
-        $("#c0").off("load");
-        
-        for (var i = 0; i < allpp.length; i++) {
-            allpp[i].src = imgPath + bimgNameArray[i];
-            /*if ( (i<=0) || (i>=(allpp.length-1)) ) {
-                sx = canPos.c_b[0];
-                sy = canPos.c_b[1];
-                ex = canPos.c_b[2];
-                ey = canPos.c_b[3];
-            } else {
-                sx = canPos.pgs[0];
-                sy = canPos.pgs[1];
-                ex = canPos.pgs[2];
-                ey = canPos.pgs[3];
-            }*/
+    if (isImgArrayLoaded) {
+        //Add OnLoad event handler for each image
+        if ( allpp[1].onload == null) {
+            $("#c0").off("load");
             
-            allpp[i].onload = function(event) {
-                sE = event.srcElement;
-                pE = sE.parentElement;
-                tId = sE.id;
-                var ib_c = ( (tId[0] == "c") || (tId[0] == "b" ) ); 
-                var cP = (ib_c)?canPos.c_b:canPos.pgs;
-                var ctx2 = pE.getContext('2d');
-                ctx2.drawImage(sE, cP[0], cP[1], cP[2], cP[3]);                
+            for (var i = 0; i < allpp.length; i++) {
+                allpp[i].src = imgPath + bimgNameArray[i];
+                /*if ( (i<=0) || (i>=(allpp.length-1)) ) {
+                    sx = canPos.c_b[0];
+                    sy = canPos.c_b[1];
+                    ex = canPos.c_b[2];
+                    ey = canPos.c_b[3];
+                } else {
+                    sx = canPos.pgs[0];
+                    sy = canPos.pgs[1];
+                    ex = canPos.pgs[2];
+                    ey = canPos.pgs[3];
+                }*/
+                
+                allpp[i].onload = function(event) {
+                    sE = event.srcElement;
+                    pE = sE.parentElement;
+                    tId = sE.id;
+                    var ib_c = ( (tId[0] == "c") || (tId[0] == "b" ) ); 
+                    var cP = (ib_c)?canPos.c_b:canPos.pgs;
+                    var ctx2 = pE.getContext('2d');
+                    ctx2.drawImage(sE, cP[0], cP[1], cP[2], cP[3]);                
 
-                var i0_last = ( (tId == "c0") || (tId == "b1" ) );
-                if ( !i0_last ) {
-                    imIndM2 = parseInt(tId[1]) % 2;
-                    te = shaCfg.grd[ imIndM2 ];
-                    tlg=ctx2.createLinearGradient(te[0], te[1], te[2], te[3]);
-                    te = shaCfg.Pg_cs[ imIndM2 ];
-                    tlg.addColorStop(0, "rgba("+te[0]+","+te[0]+","+te[0]+","+((imIndM2==0)?0.5:0.01)+")");
-                    tlg.addColorStop(1, "rgba("+te[1]+","+te[1]+","+te[1]+","+((imIndM2==0)?0.01:0.35)+")");
+                    var i0_last = ( (tId == "c0") || (tId == "b1" ) );
+                    if ( !i0_last ) {
+                        imIndM2 = parseInt(tId[1]) % 2;
+                        te = shaCfg.grd[ imIndM2 ];
+                        tlg=ctx2.createLinearGradient(te[0], te[1], te[2], te[3]);
+                        te = shaCfg.Pg_cs[ imIndM2 ];
+                        tlg.addColorStop(0, "rgba("+te[0]+","+te[0]+","+te[0]+","+((imIndM2==0)?0.5:0.01)+")");
+                        tlg.addColorStop(1, "rgba("+te[1]+","+te[1]+","+te[1]+","+((imIndM2==0)?0.01:0.35)+")");
 
-                    ctx2.fillStyle=tlg;
-                    te = shaCfg.rect[ imIndM2 ];
-                    ctx2.fillRect(te[0], te[1], te[2], te[3]);                    
-                }                
-                //alert(sA[0] + "," + sA[1]);
-                ts = sE.src;
-                ts = ts.substring(ts.lastIndexOf("/")+1);
-                //console.log("img '" + sE.id + ":" + ts + "' start loaded.")
-            };
+                        ctx2.fillStyle=tlg;
+                        te = shaCfg.rect[ imIndM2 ];
+                        ctx2.fillRect(te[0], te[1], te[2], te[3]);                    
+                    }                
+                    //alert(sA[0] + "," + sA[1]);
+                    ts = sE.src;
+                    ts = ts.substring(ts.lastIndexOf("/")+1);
+                    //console.log("img '" + sE.id + ":" + ts + "' start loaded.")
+                };
+            }
         }
+        clearTimeout(c0loadedti);
     }
 }
 
@@ -603,13 +632,12 @@ var minDeg2 = minDeg-allpg.length*ashft, maxDeg2 = maxDeg+allpg.length*ashft;
 var imCnt = -1, td_normal = 1, td_short = 0.001;
 var mf = 1;   //A good value to display like turning a page.
 var isOnLpg = null, isOnRpg = null;
-function chk_LoR_page_adj_pgInd(x,y) {
-    var spineC = document.getElementById("bookViewer").getBoundingClientRect();
-    var isTrue = (y > (spineC.top)) && (y < (spineC.top+bvC.height));
-    
-    isOnLpg =  ( isTrue && (x > (spineC.left-bvC.width)) && (x < (spineC.left)) );
-    isOnRpg = ( isTrue && (x > (spineC.left)) && (x < (spineC.left+bvC.width)) );
-
+function chk_LoR_page_adj_pgInd(x,y,id) {
+    var pnum = parseInt(id[id.length-1]);
+    var isTrue = ( (y>=sY) && (y<=(sY+sA[1])) );
+    isOnLpg = (x>=(sX-sA[0])) && (x<=sX) && isTrue ;
+    isOnRpg = (x>=sX) && (x<=(sX+sA[0])) && isTrue;
+        
     if ( isOnLpg ) {
         if (imInd < (imCnt-1)) {            
             imInd -= ( ((imInd%2)==0)?1:0 );   
@@ -621,7 +649,8 @@ function chk_LoR_page_adj_pgInd(x,y) {
         }
         pshft = Math.abs(pshft);
     }
-    document.getElementById("pgInd").innerHTML = "pgInd: " + imInd +", sl,t: (" + Math.floor(spineC.left) + "," + Math.floor(spineC.top) + "), x,y: (" + x + "," + y + ")";
+    //document.getElementById("pgInd").innerHTML = "pgInd: " + imInd +", sl,t: (" + Math.floor(cl0.left) + "," + Math.floor(cl0.top) + "), x,y: (" + x + "," + y + ")";
+    document.getElementById("pgInd").innerHTML = "pgInd: " + imInd +", x,y: (" + x + "," + y + ")";
 }
 
 function chg_2_ori_size(pg) {
@@ -638,7 +667,6 @@ function doCanvasMouseMove(event) {
     
 }
 
-
 var tTime = [0.8, 0.8];
 function book_click(event) {    
     // debugger
@@ -650,7 +678,7 @@ function book_click(event) {
     imInd =  (imInd < 0) ? 0 : imInd;
     imInd =  (imInd >= imCnt) ? (imCnt-1) : imInd;
     
-    chk_LoR_page_adj_pgInd(event.clientX, event.clientY);
+    chk_LoR_page_adj_pgInd(event.clientX, event.clientY, event.target.id);
 
 
     /*if ( (pgInd == 0) && (this.className == "hardcover_front") ) {

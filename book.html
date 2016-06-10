@@ -8,20 +8,20 @@
   </head>
   <body onload="onLoad();">
     
-    <table id="dZtable">
+    <table class="dZtable" id="dz_table">
       <tr>
-        <td>
+        <td width="30%">
         <!--<div id="choose" class="select">      
           Click the button to choose a folder of book images.
           <input type="file" id="fileURL" webkitdirectory mozdirectory msdirectory odirectory directory mdivtiple />  
         </div>-->
         </td>
-        <td align="center">
+        <td width="20%">
           <div class="dropzone" id="drop_zone">Drop files here</div>
           <output id="list"></output>
           <div id="filelist"></div>
         </td>
-        <td>
+        <td width="30%">
           <div id="fileOutput" class="info" style="visibility: hidden;">
             <table width="98%" align="center">
               <tr style="text-align: left;" >
@@ -54,7 +54,7 @@
         <canvas id="cl0" style="z-index: 1" moz-opaque>
           <img class="bimg" id="c0" src="#" alt="" style="display: none;">      
         </canvas>
-        <canvas id="cl1" style="transform: scaleX(-1); border: 1px solid #34495e;" moz-opaque>
+        <canvas id="cl1" moz-opaque>
           <img class="bimg" id="c1" src="#" alt="" style="display: none;">
         </canvas>
       </div>
