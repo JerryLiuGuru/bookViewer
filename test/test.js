@@ -64,7 +64,7 @@ function doPagePositionByMouseCor(startC, nC, nnC, tX, tY) {
                     (pbOnLefY>=sY)&&(pbOnLefY<=pe[1]),
                     (pbOnRigY>=sY)&&(pbOnRigY<=pe[1]) ];
         
-    console.log("valid: "+isValid[0]+","+isValid[1]+","+isValid[2]+","+isValid[3]);
+    //console.log("valid: "+isValid[0]+","+isValid[1]+","+isValid[2]+","+isValid[3]);
     
     ctx2 = cE.getContext('2d');
     if ( ( ((!isValid[0]) && isValid[1] && isValid[2]) ) || 
@@ -84,7 +84,8 @@ function doPagePositionByMouseCor(startC, nC, nnC, tX, tY) {
         return;
     }
  
-    var dif, dif2;
+    var dif, dif2, p0, p1, p2, p3;
+    var l4 = Math.sqrt( Math.pow(cp[0]-pe[0],2) + Math.pow(cp[1]-pe[1],2) )>>1;
     if ( (isValid[1] && isValid[3]) ) {
         cE.width = cE.width;  // **Trick to clear canvas.
         //ctx2.drawImage(pi[pnum], sX, sY, sA[0], sA[1]);
@@ -124,6 +125,8 @@ function doPagePositionByMouseCor(startC, nC, nnC, tX, tY) {
         ctx2.translate(-sX, -sY);
         //dOriPattern(ctx2, "#00ffff");
         l3 = Math.sqrt( Math.pow(l2,2) + Math.pow(l1,2) );
+        p2 = [(l4/3), sY+(l4/3)/Math.tan(degb)];
+        p3 = [p2[0], sY+l3-(l4/3)*Math.tan(degb)];
     } else if ( (isValid[0] && isValid[1]) ) {
         cE.width = cE.width;  // **Trick to clear canvas.
         //ctx2.drawImage(pi[pnum], sX, sY, sA[0], sA[1]);
@@ -161,9 +164,16 @@ function doPagePositionByMouseCor(startC, nC, nnC, tX, tY) {
           ctx2.translate(-sX, -sY);
                           
           l3 = ts;
+          l5 = (l4<100)? l4:((l4/2)>50)?50:(l4/2);
+          p2 = [l5, sY+l5/Math.tan(dega)];
+          p3 = [p2[0], sY+l3+l5/Math.tan(dega)];
         } else {
           l1= Math.sqrt(Math.pow(pbOnBotX-cp[0],2) + Math.pow(pe[1]-cp[1],2));
           l2= Math.sqrt(Math.pow(pe[0]-cp[0],2) + Math.pow(pbOnRigY-cp[1],2));
+          if (l2 == Infinity) {
+            doPagePositionByMouseCor(startC, nC, nnC, ofsX, pe[1]+2);
+            return;
+          }
           ctx2.beginPath();
           ctx2.moveTo(pe[0], pe[1]);
           ctx2.lineTo(pe[0]-l1,pe[1]);
@@ -199,19 +209,28 @@ function doPagePositionByMouseCor(startC, nC, nnC, tX, tY) {
           //dOriPattern(ctx2, "#00ffff");
           ctx2.translate(0, dif);
           l3 = Math.sqrt( Math.pow(l2,2) + Math.pow(l1,2) ) - dif; 
+          l5 = (l4<100)? l4:((l4/2)>50)?50:(l4/2);
+          p2 = [l5, sY-l5*Math.tan(degb)];
+          p3 = [p2[0], sY+l3-l5*Math.tan(degb)];       
         }        
     }
+    p1 = [sX, sY]; 
+    p4 = [sX, sY+l3];
     
     //shadow left
     var shdw = 55;
-    var more = 0, shdw2 = -1;
+    var shdw2 = p2[0];
     for (var i = 0, j = -1, k = 1; i <= 1; i++, j *= -1, k--) {
-      shdw2 = 2*shdw;
       ctx2.beginPath();        
-      ctx2.moveTo(sX, sY-more);
-      ctx2.lineTo(sX, sY+l3+more);
-      ctx2.lineTo(sX+j*shdw2, sY+l3+more);
-      ctx2.lineTo(sX+j*shdw2, sY-more);
+/*      ctx2.moveTo(sX, sY);
+      ctx2.lineTo(sX, sY+l3);
+      ctx2.lineTo(sX+j*shdw2, sY+l3);
+      ctx2.lineTo(sX+j*shdw2, sY);*/
+      ctx2.moveTo(p1[0], p1[1]);
+      ctx2.lineTo(sX+j*p2[0], p2[1]);
+      ctx2.lineTo(sX+j*p3[0], p3[1]);
+      ctx2.lineTo(p4[0], p4[1]);
+
       ctx2.closePath();
       var tlg=(i == 0)?ctx2.createLinearGradient(sX-shdw2, sY, sX, sY):ctx2.createLinearGradient(sX, sY, sX+shdw2, sY);
       te = Pg_cs[ k ];
