@@ -6,7 +6,7 @@
     <link href="css/book.css" rel="stylesheet">
     
   </head>
-  <body onload="onLoad();">
+  <body id="body" onload="onLoad();">
     
     <table class="dZtable" id="dz_table">
       <tr>
@@ -50,58 +50,58 @@
     
     <div class="book" id="bookViewer" style="visibility: visible;">
       <!-- Front -->
-      <div class="hardcover_front" id="cover">
+      <!--<div class="hardcover_front" id="cover">-->
         <canvas id="cl0" style="z-index: 1" moz-opaque>
           <img class="bimg" id="c0" src="#" alt="" style="display: none;">      
         </canvas>
         <canvas id="cl1" moz-opaque>
           <img class="bimg" id="c1" src="#" alt="" style="display: none;">
         </canvas>
-      </div>
+      <!--</div>-->
       
       <!-- Pages -->
-      <div class="page" id="page1">
+      <!--<div class="page" id="page1">-->
         <canvas id="pl0" moz-opaque>
           <img class="bimg" id="p0" src="#" alt="" style="display: none;">
         </canvas>
-        <canvas id="pl1" style="transform: scaleX(-1);" moz-opaque>
+        <canvas id="pl1" moz-opaque>
           <img class="bimg" id="p1" src="#" alt="" style="display: none;">
         </canvas>
-      </div>
-      <div class="page" id="page2">
+      <!--</div>-->
+      <!--<div class="page" id="page2">-->
         <canvas id="pl2" moz-opaque>
           <img class="bimg" id="p2" src="#" alt="" style="display: none;">
         </canvas>
-        <canvas id="pl3" style="transform: scaleX(-1);" moz-opaque>
+        <canvas id="pl3" moz-opaque>
           <img class="bimg" id="p3" src="#" alt="" style="display: none;">
         </canvas>
-      </div>
-      <div class="page" id="page3">
+      <!--</div>-->
+      <!--<div class="page" id="page3">-->
         <canvas id="pl4" moz-opaque>
           <img class="bimg" id="p4" src="#" alt="" style="display: none;">
         </canvas>
-        <canvas id="pl5" style="transform: scaleX(-1);" moz-opaque>
+        <canvas id="pl5" moz-opaque>
           <img class="bimg" id="p5" src="" alt=""  style="display: none;">
         </canvas>
-      </div>
-      <div class="page" id="page4">
+      <!--</div>-->
+      <!--<div class="page" id="page4">-->
         <canvas id="pl6" moz-opaque>
           <img class="bimg" id="p6" src="#" alt="" style="display: none;">
         </canvas>
-        <canvas id="pl7" style="transform: scaleX(-1);" moz-opaque>
+        <canvas id="pl7" moz-opaque>
           <img class="bimg" id="p7" src="" alt=""  style="display: none;">
         </canvas>
-      </div>
+      <!--</div>-->
 
       <!-- Back -->
-      <div class="hardcover_back" id="back">
-        <canvas id="bl0" moz-opaque style="border: 1px solid #34495e;">
+      <!--<div class="hardcover_back" id="back">-->
+        <canvas id="bl0" moz-opaque>
           <img class="bimg" id="b0" src="#" alt="" style="display: none;">
         </canvas>
-        <canvas id="bl1" style="transform: scaleX(-1);" moz-opaque>
+        <canvas id="bl1" moz-opaque>
           <img class="bimg" id="b1" src="#" alt="" style="display: none;">
         </canvas>
-      </div>
+      <!--</div>-->
       
       <!-- Spine -->
       <!--<ul class="book_spine" id="spine">

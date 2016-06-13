@@ -79,7 +79,8 @@ function handleResize(img) {
             }   
         }
     }
-    return [rw-tbdrw, rh-tbdrw, rw-tbdrw2, rh-tbdrw2];
+    //return [rw-tbdrw, rh-tbdrw, rw-tbdrw2, rh-tbdrw2];
+    return [rw2, rh2, rw2, rh2];
 }
 
 var debugMode = true;
@@ -94,7 +95,7 @@ function showBookViewer() {
     bV.style["z-index"] = 1;
     //for (var i=0; i<allpl.length; i++) {
         if (debugMode) {    // for debug;
-            sY = Math.floor(window.screen.availHeight/2 - sA[1]/2.5); //choose.offsetHeight + output.offsetHeight + 350;
+            sY = Math.floor(window.screen.availHeight/2 - sA[1]/2.1); //choose.offsetHeight + output.offsetHeight + 350;
             sX = Math.floor(window.screen.availWidth/2 - sA[0]/1.5);  
         } else {
             sY = Math.floor(window.screen.availHeight/2 - sA[1]/2.5); //choose.offsetHeight + output.offsetHeight + 350;
@@ -113,266 +114,466 @@ function showBookViewer() {
     bvC = document.getElementById("bookViewer").getBoundingClientRect();
 }
 
-var startC = null, nC = null, nnC = null, pC = null;
+var startC = null, sC = null, nC = null, nnC = null, pC = null;
 var dX = -1, dY = -1; 
 function page_mousedown(event) {
+    console.log("mousedown in");
     //event.dataTransfer.setData("Text", event.target.id);
-    isMouseUp = false;
+    if (c1.src.indexOf("#") != -1) {
+        alert("Book images are not loaded!");
+        startC = null;
+        return;
+    }
+    if (mouseState != null) {
+        return;
+    }
+    mouseState = "0";
+    
     dX = event.clientX; 
     dY = event.clientY;
     var bC = event.target;
     var tId = bC.id;
     chk_LoR_page_adj_pgInd(dX, dY, tId);
     
-    if ( (!isOnLpg) && (!isOnRpg) ) {
+    if ( ((!isOnLpg) && (!isOnRpg)) || ((imInd==0)&&(isOnLpg)) || ((imInd==(imCnt-1))&&(isOnRpg)) ) {
+        mouseState = null;
         return;
     }
-    /*if ( (tId[0] == "c") || (tId[0] == "b") ) { // cover & back page don't turn.
-        return;
-    }*/
-    startC = bC;
-    var pnum = parseInt(tId[2]);
-    if ((pnum%2)==0) {
-        nC = pl[pnum+1];
-        pC = (pnum==0)?cc[1]:pl[pnum-1];
-        nnC = (pnum==(pl.length-2))?bc[0]:pl[pnum+2];
+    var shft;
+    if ((imInd%2)==0) {
+        if (imInd == 0) {
+            pC = null;
+            sC = cc[0];
+            nC = cc[1];            
+            nnC = pl[0];
+        } else if (imInd==(imCnt-2)) {
+            tind = (imInd-1)%pl.length;
+            pC = pl[tind];
+            sC = bc[0];
+            nC = bc[1];            
+            nnC = null;  
+        } else {
+            tind = ((imInd-2) % pl.length);
+            pC = pl[tind-1];
+            sC = pl[tind];
+            nC = pl[tind+1];            
+            nnC = pl[(tind+2)%pl.length];
+        }
+        shft = 1;
     } else {
-        nC=pl[pnum-1];
-        pC=(pnum==(pl.length-1))?bc[0]:pl[pnum+1];
-        nnC = (pnum==1)?cc[1]:pl[pnum-2];
+        if (imInd == (imCnt-1)) {
+            pC = null;
+            sC = bc[1];
+            nC = bc[0];
+            tind = (imInd-2)%pl.length;
+            nnC = pl[tind];
+        } else if (imInd==1) {
+            pC = pl[0];
+            sC = cc[1];
+            nC = cc[0];            
+            nnC = null;
+        } else {
+            tind = ((imInd-2) % pl.length);
+            pC=pl[tind+1];
+            sC =pl[tind];
+            nC=pl[tind-1];            
+            nnC = pl[(tind-2)%pl.length];
+        }
+        shft = -1;
     }
-    console.log("pC,sC,nC,nnC=" + pC.id + "," + startC.id + "," + nC.id + "," + nnC.id);
+    fp = imgPath.substring(1,150) + bimgNameArray[imInd+shft];
+    if (nC.children[0].src.indexOf(fp) == -1) {
+        nC.children[0].src = "."+fp;
+    }
+    if (nnC!=null) {
+        fp = imgPath.substring(1,150) + bimgNameArray[imInd+2*shft];
+        if (nnC.children[0].src.indexOf(fp) == -1) {
+            nnC.children[0].src = "."+fp;
+        }
+    }
+    console.log("mousedown: pC,bC,nC,nnC=" + ((pC==null)?"null":pC.id) + "," + sC.id + "," + nC.id + "," + ((nnC==null)?"null":nnC.id));
 }
 
 var showItvl = 10, minToShow = 10;
-function doShowPageByInterval(curX, curY, tarX, tarY) {
+function doShowPageByInterval(curX, curY, tarX, tarY, timeItvl, shrinkDis) {
     // Animation Line: Y - dP[1] = (cy-dP[1])/(cx-dP[0]) * (X - dp[0]);
     // Do 4 steps to be on the dP. Every step take half way.
     //var sS = [ [-1,-1], [-1,-1], [-1,-1] ];
-    var tX = curX; 
-    var tY = curY;
 
-    doPagePositionByMouseCor(startC, nC, nnC, tX, tY);
-    if ( (Math.abs(tX-tarX)>minToShow) || (Math.abs(tY-tarY)>minToShow) ) {
-        tX = (tX + ((tarX-tX) * 1/2));
-        tY = (tY + ((tarY-tY) * 1/2));
+    //console.log("Set page to ("+curX+","+curY+")");
+    console.log("mousemove200");
+    doPagePositionByMouseCor(startC, nC, nnC, curX, curY);
+    if ( (Math.abs(curX-tarX)>minToShow) || (Math.abs(curY-tarY)>minToShow) ) {
+        curX = (curX + ((tarX-curX) * shrinkDis));
+        curY = (curY + ((tarY-curY) * shrinkDis));
         //sS[i] = [tX, tY];
-        setTimeout(doShowPageByInterval, showItvl, tX, tY, tarX, tarY);      
+        setTimeout(doShowPageByInterval, timeItvl, curX, curY, tarX, tarY, timeItvl, shrinkDis);      
     } else {
+        if (mouseState == "012") {
+            curX = tarX;
+            curY = tarY;
+           if (turn2Right) {
+                doPagePositionByMouseCor(pC, startC, nC, curX, curY);
+                turn2Right = false;
+            } else if (turn2Left) {
+                doPagePositionByMouseCor(startC, nC, nnC, curX, curY);
+                turn2Left = false;
+            }
+        }
         startC = nC = nnC = null;
-    }    
-    //book_click(event);
-    //doPagePositionByMouseCor(startC, nC, nnC, dP[0], dP[1]);    
+        /*$("canvas").on("mousemove", page_mousemove);
+        $("canvas").on("mousedown", page_mousedown);
+        $("canvas").on("mouseup", page_mouseup);*/
+        mouseState = null;
+        console.log("end of action.");
+    }
 }
 
-var isMouseUp = false;
+var mouseState = null;  // 0/1/2: down/move/up
+var shkRatio = 1/2;
+var turn2Right, turn2Left;
+
 function page_mouseup(event) {
+    console.log("mouseup in");
     event.preventDefault();
+    if ( (c1.src.indexOf("#") != -1) || ((mouseState!="0")&&(mouseState!="01")) ||
+       ((!isOnLpg) && (!isOnRpg) && (mouseState=="0")) ) { // mouseState==2 to prevent re-entry.
+        return;
+    }
+    mouseState += "2";
+    
     // Do put the page on the destination: 
     // If the mouse is still on the starting page, return to the original position; 
     // If on the page the other side, turn the page.
     var uX = event.clientX, uY = event.clientY;
-    var tId = event.target.id;
+    startC = sC;
+    var tId = startC.id;
+
+    var isOnLpg_d = isOnLpg, isOnRpg_d = isOnRpg;
+    chk_LoR_page_adj_pgInd(event.clientX,event.clientY,tId);    
+    
     var pnum = parseInt(tId[2]);
     if ( (startC == null) || (tId[0] == "c") || (tId[0] == "b") || ( (Math.abs(uX-dX)<5)&&(Math.abs(uY-dY)<5) ) ) { // cover & back page don't slide but just turn the page.
-        book_click(event);
-        return;
+        //book_click(event);
+        if (mouseState=="02") {
+            if ( (tId[0] != "c") && (tId[0] != "b") ) {
+                startC.width = startC.width;
+            }            
+            zindv++;
+            startC.style["z-index"] = zindv;        
+        }
+
+        if (isOnLpg) {
+            imInd = (imInd <= 2)?0:(imInd-2);
+            setTimeout(doShowPageByInterval, showItvl, sX-sA[0], sY+sA[1], sX+sA[0], sY+sA[1], showItvl, shkRatio);   
+        } else if (isOnRpg) {
+            imInd = (imInd >= (imCnt-3))?(imCnt-1):(imInd+2);
+            setTimeout(doShowPageByInterval, showItvl, sX+sA[0], sY+sA[1], sX-sA[0], sY+sA[1], showItvl, shkRatio);
+        }
+    } else {
+        var dP = null;
+        if (isOnLpg) {
+            dP = [sX-sA[0], sY+sA[1]];
+            if (isOnRpg_d) {
+                imInd = (imInd >= (imCnt-3))?(imCnt-1):(imInd+2);
+                turn2Left = true;
+            }
+        } else if (isOnRpg) {
+            dP = [sX+sA[0], sY+sA[1]];
+            if (isOnLpg_d) {
+                imInd = (imInd <= 2)?0:(imInd-2);
+                turn2Right = true;
+            }
+        } else {
+            if (isOnLpg_d) {
+                dP = [sX-sA[0], sY+sA[1]];
+            } else {
+                dP = [sX+sA[0], sY+sA[1]];
+            }
+        }
+        //if (mouseState == "012") {
+            setTimeout(doShowPageByInterval, showItvl, event.offsetX, event.offsetY, dP[0], dP[1], showItvl, 1/2);            
+        //}
     }
-    chk_LoR_page_adj_pgInd(event.clientX,event.clientY,tId);
-    var desPoint = null;
-    if (isOnLpg) {
-        dP = [0, pC.height];        
-    } else if (isOnRpg) {
-        dP = [pC.width, pC.height];
-    }
-    isMouseUp = true;
-    setTimeout(doShowPageByInterval, showItvl, event.offsetX, event.offsetY, dP[0], dP[1]); 
+    console.log("mouseup out");
 }
 
 function page_mousemove(event) { // Actuall, during dragging.
-    /*if ( (isMouseUp) || (startC==null)) {
-        return;
-    }*/
-    chk_LoR_page_adj_pgInd(event.clientX, event.clientY, event.target.id);    
-    if ( (!isOnRpg) ) {
+    if ( ((mouseState!="0")&&(mouseState!="01")) || (sC==null) || (sC.id[0]=="c") || (sC.id[0]=="b") ) {
         return;
     }
+    if (mouseState=="0") {
+        mouseState = "01";    
+    }
+    startC = sC;
+    var tId = startC.id;
 
-    startC = cl0; nC = cl1; nnC = pl0;
+    chk_LoR_page_adj_pgInd(event.clientX, event.clientY, tId);    
+
+    zindv++;
+    startC.style["z-index"] = zindv;        
+    //startC = cl0; nC = cl1; nnC = pl0;    // For test
+    console.log("mousemove273");
     doPagePositionByMouseCor(startC, nC, nnC, event.offsetX, event.offsetY);
     //console.log(cE.id + "@(" + x + "," + y + ")");    
 }
 
-var tPbrdercolor = "#34495e";
+var tPbrdercolor = "#34495e", bgcolor = "#ecf0f1";;
+var Pg_cs = [ ["0", "255"], ["255","0"] ];   // right and left
+var pbOnTopX, pbOnBotX, pbOnLefY, pbOnRigY;
+var isValid, l1, l2, l3, degb;
 function doPagePositionByMouseCor(cE, nC, nnC, ofsX, ofsY) {
-    //var cTop = sY;
-    //var cLeft = sX;
-    //var cEbrdy = [cTop, cTop+sA[1], cLeft, cLeft+sA[0]];
     var cp = [ofsX, ofsY];    // current position in canvas
     var pe = [sX+sA[0], sY+sA[1]];             // page right-bottom endpoint
+    var p1=[sX, sY];
+        
+    ctx2 = cE.getContext('2d');
+    if ( (cp[0]==pe[0])&&(cp[1]==pe[1]) ) {
+        cE.width = cE.width;  // **Trick to clear canvas.
+        ctx2.drawImage(cE.children[0], sX, sY, sA[0], sA[1]);
+        doPaintShadow(ctx2, p1, [shaCfg.spw, sY], [shaCfg.spw, pe[1]], [sX,pe[1]]);
+        return;        
+    }
+    
     var ce = [ (cp[0]+pe[0])/2, (cp[1]+pe[1])/2];   // center of cp & pe
     var slope_cp = (cp[1] - pe[1]) / (cp[0] - pe[0]);   // slope of cp & pe   
     var slope_pb = - (1/slope_cp); // perpendicular bisector 垂直平分線
     //==> pb equation: y - ce[1] = slope_pb * (x - ce[0])
-    var pbOnTopX = Math.floor( ( (sY-ce[1])/slope_pb ) + ce[0] );
-    var pbOnBotX = Math.floor( ( (pe[1]-ce[1])/slope_pb ) + ce[0] );
-    var pbOnLefY = Math.floor( slope_pb * (sX-ce[0]) + ce[1] );
-    var pbOnRigY = Math.floor( slope_pb * (pe[0]-ce[0]) + ce[1] );
-    var isValid = [ (pbOnTopX>=sX)&&(pbOnTopX<=pe[0]), 
-                    (pbOnBotX>=sX)&&(pbOnBotX<=pe[0]),
-                    (pbOnLefY>=sY)&&(pbOnLefY<=pe[1]),
-                    (pbOnRigY>=sY)&&(pbOnRigY<=pe[1]) ];
-    var pnum = parseInt(cE.id[2]);
-    console.log(cE.id + "@(" + ofsX + "," + ofsY + ":" + cp[0] + "," + cp[1] + "):(T" + 
-    pbOnTopX + ",B" + pbOnBotX + ",L" + pbOnLefY + ",R" + pbOnRigY + "),(" + 
-    isValid[0] + "," + isValid[1] + "," + isValid[2] + "," + isValid[3] + ")");
+    pbOnTopX = Math.floor( ( (sY-ce[1])/slope_pb ) + ce[0] );
+    pbOnBotX = Math.floor( ( (pe[1]-ce[1])/slope_pb ) + ce[0] );
+    pbOnLefY = Math.floor( slope_pb * (sX-ce[0]) + ce[1] );
+    pbOnRigY = Math.floor( slope_pb * (pe[0]-ce[0]) + ce[1] );
+    isValid = [ (pbOnTopX>=sX)&&(pbOnTopX<=pe[0]), 
+                (pbOnBotX>=sX)&&(pbOnBotX<=pe[0]),
+                (pbOnLefY>=sY)&&(pbOnLefY<=pe[1]),
+                (pbOnRigY>=sY)&&(pbOnRigY<=pe[1]) ];
+        
+    //console.log("valid: "+isValid[0]+","+isValid[1]+","+isValid[2]+","+isValid[3]);
     
-
-    if ( (isValid[1] && isValid[3]) || (isValid[0] && isValid[1]) ) { // Valid: Bottom & Right
-        /*if ( (pbOnBotX > (cE.width-50)) || (pbOnRigY > (cE.height-50)) ) {
-            return;
-        }*/
-        
-        /*var ctx = cE.getContext('2d');
-        ctx.beginPath();
-        ctx.moveTo(0, 0);    // (left,top)
-        ctx.lineTo(0, cE.height);    // (left,bottom)
-        ctx.lineTo(pbOnBotX, cE.height);
-        ctx.lineTo(cp[0], cp[1]);
-        ctx.lineTo(cE.width, pbOnRigY);
-        ctx.lineTo(cE.width, 0);
-        ctx.closePath();
-        ctx.fillStyle = ctx.createPattern(c0, "no-repeat");
-        //ctx.fill();
-        //ctx.drawImage(c0, 0, 0);
-        */
-        
-        ctx2 = cE.getContext('2d');
+    
+    if ( ( ((!isValid[0]) && isValid[1] && isValid[2]) ) || 
+         ( !(isValid[0]||isValid[1]||isValid[2]||isValid[3]) ) || 
+         (isValid[0] && isValid[3]) ) { // (!bottom) and left and right
+      return;
+    }
+    if ( ((!isValid[1]) && isValid[2] && isValid[3]) ) { // (!bottom) and left and right
+        ctx2.moveTo(ofsX, ofsY);
+        ctx2.lineTo(sX, sY+sA[1]);
+        tdeg = Math.atan((sY+sA[1]-cp[1])/(cp[0]-sX))/2;
+        ts = (Math.sin(tdeg)*sA[0])<<1;
+        degb = Math.PI/2-tdeg;
+        ofsY = sY + sA[1] - (ts*Math.sin(degb));
+        ofsX = sX + sA[0] - (ts*Math.cos(degb));
+        console.log("mousemove315");
+        doPagePositionByMouseCor(startC, nC, nnC, ofsX, ofsY);
+        return;
+    }
+    console.log("bC="+cE.id+",nC="+nC.id+",nnC="+((nnC==null)?"null":nnC.id));
+    var dif, dif2, p2, p3, p4;
+    var l4 = Math.sqrt( Math.pow(cp[0]-pe[0],2) + Math.pow(cp[1]-pe[1],2) )>>1;
+    if ( (isValid[1] && isValid[3]) ) {
         cE.width = cE.width;  // **Trick to clear canvas.
         //ctx2.drawImage(pi[pnum], sX, sY, sA[0], sA[1]);
-        ctx2.drawImage(c0, sX, sY, sA[0], sA[1]);
-
-        if ( (Math.abs(cp[0]-pe[0]) <= minToShow) && (Math.abs(cp[1]-pe[1]) <= minToShow) ) {
-            return;
-        }
-        //var ll= Math.sqrt( Math.pow(pbOnBotX-cE.width,2) + Math.pow(pbOnRigY-cE.height,2) );
-        // Sin(b) = (cE.width-pbOnBotX) / ll, or 
-        // tan(b) = (cE.width-pbOnBotX)/(cE.height-pbOnRigY)
-
-        var l1= Math.sqrt(Math.pow(pbOnBotX-cp[0],2) + Math.pow(pe[1]-cp[1],2));
-        var l2= Math.sqrt(Math.pow(pe[0]-cp[0],2) + Math.pow(pbOnRigY-cp[1],2));
-
+        ctx2.drawImage(cE.children[0], sX, sY, sA[0], sA[1]);
+        doPaintShadow(ctx2, p1, [shaCfg.spw, sY], [shaCfg.spw, pe[1]], [sX,pe[1]]);
+         
+        l1= Math.sqrt(Math.pow(pbOnBotX-cp[0],2) + Math.pow(pe[1]-cp[1],2));
+        l2= Math.sqrt(Math.pow(pe[0]-cp[0],2) + Math.pow(pbOnRigY-cp[1],2));
         ctx2.beginPath();
-        ctx2.moveTo(pe[0], pe[1]);
-        ctx2.lineTo(pe[0]-l1,pe[1]);
-        ctx2.lineTo(pe[0],pe[1]-l2);
+        if (nnC != null) {
+            ctx2.moveTo(pe[0], pe[1]);
+            ctx2.lineTo(pe[0]-l1,pe[1]);
+            ctx2.lineTo(pe[0],pe[1]-l2);
+            ctx2.fillStyle=ctx2.createPattern(nnC,"no-repeat");
+            ctx2.strokeStyle = tPbrdercolor;
+        }
+        /* else {
+            ctx2.moveTo(pe[0]+2, pe[1]+2);
+            ctx2.lineTo(pe[0]-l1,pe[1]);
+            ctx2.lineTo(pe[0],pe[1]-l2);
+            ctx2.fillStyle=bgcolor;
+            ctx2.strokeStyle = bgcolor;
+        }*/
         ctx2.closePath();
-        ctx2.fillStyle=ctx2.createPattern(nnC,"no-repeat");
         ctx2.fill();
-        ctx2.strokeStyle = "red";
         ctx2.stroke();
-
-        //ctx2 = cE.getContext("2d");
-        var degb = Math.atan( (pe[0]-pbOnBotX)/(pe[1]-pbOnRigY) ); //a value between -PI/2 and PI/2 radians.
+        
+        degb = Math.atan( (pe[0]-pbOnBotX)/(pe[1]-pbOnRigY) ); //a value between -PI/2 and PI/2 radians.
         ctx2.translate(Math.floor(cp[0]), Math.floor(cp[1]));
-        //var n, m;
-        //radians=degrees*Math.PI/180, 2*degb(-PI/2~PI/2)=2*degb/90(-PI/180~PI/180)
-        /*if ((degb*180/Math.PI) >= 45) { // 2b degree   => **: rotate 不能在 translate 之前做
-            var b2_sub_ninty = degb*2-Math.PI/2;
-            n = Math.sin(b2_sub_ninty)*cE.height;
-            m = Math.cos(b2_sub_ninty)*cE.height;                  
-        } else {
-            m = Math.sin(degb)*cE.height;
-            n = -Math.cos(degb)*cE.height;
-        }*/ // 座標轉換後，就以新座標軸作用, 所以不用計算以上了
+        
         ctx2.rotate(degb*2); // 2b degree   => **: rotate 不能在 translate 之前做
         ctx2.translate(-sX, -pe[1]);
         ctx2.beginPath();
-        if (isValid[0] && isValid[1]) {
-            ctx2.moveTo(sX,sY);
-        } else {
-            ctx2.moveTo(sX,pe[1]-l2);   
-        }
+        ctx2.moveTo(sX,pe[1]-l2);   
         ctx2.lineTo(sX, pe[1]);
         ctx2.lineTo(sX+l1,pe[1]);
-        var dif, dif2;
-        if (isValid[0] && isValid[1]) {
-            dif = Math.floor(Math.abs(pbOnRigY-sY)*Math.tan(degb));
-            ctx2.lineTo(sX+dif,sY);
-            ctx2.lineTo(sX,sY);            
-            dif = Math.floor(dif/Math.sin(degb));
-            dif2 = (pbOnRigY-sY);
-        } else {
-            dif = 0;
-            dif2 = (pbOnRigY-sY);
-        }
+        dif2 = (pbOnRigY-sY);
         ctx2.closePath();
         ctx2.fillStyle=ctx2.createPattern(nC,"no-repeat");
         ctx2.fill();
         ctx2.strokeStyle=tPbrdercolor;
         ctx2.stroke();
-
-        //shadow left
-        var shdw = 55;
-        //var degc = Math.atan( (l1)/(l2) ); //a value between -PI/2 and PI/2 radians.
-        console.log(dif2 + "," + dif + ":" + degb + "," + degc);
-        ctx2.translate(0, dif2);
+        
+        ctx2.translate(sX, sY + dif2);
+        //dOriPattern(ctx2, "#ffff00");
         ctx2.rotate(-degb); 
-        ctx2.translate(0, dif);
-        var l3 = Math.sqrt( Math.pow(l2,2) + Math.pow(l1,2) );
-        var more = 0, shdw2 = -1;
-        
-        for (var i = 0, j = -1, k = 1; i <= 1; i++, j *= -1, k--) {
-            shdw2 = 2*shdw;
-            ctx2.beginPath();        
-            ctx2.moveTo(sX, sY-more);
-            ctx2.lineTo(sX, sY+l3+more);
-            ctx2.lineTo(sX+j*shdw2, sY+l3+more);
-            ctx2.lineTo(sX+j*shdw2, sY-more);
+        ctx2.translate(-sX, -sY);
+        //dOriPattern(ctx2, "#00ffff");
+        l3 = Math.sqrt( Math.pow(l2,2) + Math.pow(l1,2) );
+        p2 = [(l4/3), sY+(l4/3)/Math.tan(degb)];
+        p3 = [p2[0], sY+l3-(l4/3)*Math.tan(degb)];
+    } else if ( (isValid[0] && isValid[1]) ) {
+        cE.width = cE.width;  // **Trick to clear canvas.
+        //ctx2.drawImage(pi[pnum], sX, sY, sA[0], sA[1]);
+        ctx2.drawImage(cE.children[0], sX, sY, sA[0], sA[1]);
+        doPaintShadow(ctx2, p1, [shaCfg.spw, sY], [shaCfg.spw, pe[1]], [sX,pe[1]]);
+         
+        if (cp[1]> (sY+sA[1])) {
+            ctx2.beginPath();            
+            if (nnC != null) {
+                ctx2.moveTo(pe[0], pe[1]);
+                ctx2.lineTo(pbOnBotX,pe[1]);
+                ctx2.lineTo(pbOnTopX,sY);
+                ctx2.lineTo(pe[0],sY);
+                ctx2.fillStyle=ctx2.createPattern(nnC,"no-repeat");
+                ctx2.strokeStyle = tPbrdercolor;
+            } else {
+                ctx2.moveTo(pe[0]+2, pe[1]+2);
+                ctx2.lineTo(pbOnBotX,pe[1]+2);
+                ctx2.lineTo(pbOnTopX,sY-2);
+                ctx2.lineTo(pe[0]+2,sY-2);
+                ctx2.fillStyle=bgcolor;
+                ctx2.strokeStyle = bgcolor;
+            }
             ctx2.closePath();
-            var tlg=(i == 0)?ctx2.createLinearGradient(sX-shdw2, sY, sX, sY):ctx2.createLinearGradient(sX, sY, sX+shdw2, sY);
-            te = shaCfg.Pg_cs[ k ];
-            tlg.addColorStop(0, "rgba("+te[0]+","+te[0]+","+te[0]+","+((i==0)?0.01:0.4)+")");
-            tlg.addColorStop(((i==0)?0.6:0.5), "rgba("+te[i]+","+te[i]+","+te[i]+","+((i==0)?0.1:0.1)+")");
-            tlg.addColorStop(1, "rgba("+te[1]+","+te[1]+","+te[1]+","+((i==0)?0.4:0.01)+")");
-            ctx2.fillStyle=tlg;
             ctx2.fill();
-        }
-        //nC.style["z-index"] = zindv;
-        /*
-        ctx2.beginPath();
-        ctx2.moveTo(0, -more);
-        ctx2.lineTo(0, l3+more);
-        ctx2.lineTo(-shdw, l3+more);
-        ctx2.lineTo(-shdw, -more);
-        ctx2.closePath();
-        var tlg=ctx2.createLinearGradient(-shdw, 0, 0, 0);
-        te = shaCfg.Pg_cs[ 1 ];
-        tlg.addColorStop(0, "rgba("+te[0]+","+te[0]+","+te[0]+",0.01)");
-        tlg.addColorStop(0.5, "rgba("+te[0]+","+te[0]+","+te[0]+",0.05)");
-        tlg.addColorStop(1, "rgba("+te[1]+","+te[1]+","+te[1]+",0.5)");
-        ctx2.fillStyle=tlg;
-        ctx2.fill();
-        
-        //shadow right
-        ctx2.beginPath();
-        ctx2.moveTo(0, -more);
-        ctx2.lineTo(0, l3+more);
-        ctx2.lineTo(shdw, l3+more);
-        ctx2.lineTo(shdw, -more);
-        ctx2.closePath();
-        tlg=ctx2.createLinearGradient(0, 0, shdw, 0);
-        te = shaCfg.Pg_cs[ 0 ];
-        tlg.addColorStop(0, "rgba("+te[0]+","+te[0]+","+te[0]+",0.5)");
-        tlg.addColorStop(0.5, "rgba("+te[1]+","+te[1]+","+te[1]+",0.05)");
-        tlg.addColorStop(1, "rgba("+te[1]+","+te[1]+","+te[1]+",0.01)");
-        ctx2.fillStyle=tlg;
-        ctx2.fill();
-        */
-        /*console.log(cE.id + "@(" + x + "," + y + ":" + cp[0] + "," + cp[1] + 
-            "),trans(" + Math.floor(m) + "," + Math.floor(n) + "),degb=" + 
-            Math.round(degb*180/Math.PI) + ",2b-90=" + b2_sub_ninty);*/
-    }    
+            ctx2.stroke();
+                      
+            ctx2.translate(Math.floor(cp[0]), Math.floor(cp[1]));
+            ts = Math.sqrt( Math.pow(pbOnBotX-pbOnTopX,2) + Math.pow(sA[1],2) );
+            dega = Math.asin( sA[1]/ts );
+            degb = Math.PI - 2*dega;
+            ctx2.rotate(-degb);
+            ctx2.translate(-sX, -pe[1]);
+            ctx2.beginPath();
+            ctx2.moveTo(sX,sY);
+            ctx2.lineTo(sX,pe[1]);
+            ctx2.lineTo(sX+(pe[0]-pbOnBotX),pe[1]);
+            ctx2.lineTo(sX+(pe[0]-pbOnTopX),sY);
+            ctx2.closePath();
+            ctx2.fillStyle=ctx2.createPattern(nC,"no-repeat");
+            ctx2.fill();
+            ctx2.strokeStyle=tPbrdercolor;
+            ctx2.stroke();
+
+            ctx2.translate(sX+(pe[0]-pbOnTopX), sY);          
+            ctx2.rotate(degb/2); // 2b degree   => **: rotate 銝滩�賢銁 translate 銋见�滚��
+            ctx2.translate(-sX, -sY);
+                            
+            l3 = ts;
+            l5 = (l4<100)? l4:((l4/2)>50)?50:(l4/2);
+            p2 = [l5, sY+l5/Math.tan(dega)];
+            p3 = [p2[0], sY+l3+l5/Math.tan(dega)];
+        } else {
+            l1= Math.sqrt(Math.pow(pbOnBotX-cp[0],2) + Math.pow(pe[1]-cp[1],2));
+            l2= Math.sqrt(Math.pow(pe[0]-cp[0],2) + Math.pow(pbOnRigY-cp[1],2));
+            if (l2 == Infinity) {
+                console.log("mousemove410");
+                doPagePositionByMouseCor(startC, nC, nnC, ofsX, pe[1]+2);
+                return;
+            }
+            ctx2.beginPath();
+            if (nnC != null) {
+                ctx2.moveTo(pe[0], pe[1]);
+                ctx2.lineTo(pe[0]-l1,pe[1]);
+                ctx2.lineTo(pbOnTopX,sY);
+                ctx2.lineTo(pe[0],sY);
+                ctx2.fillStyle=ctx2.createPattern(nnC,"no-repeat");
+                ctx2.strokeStyle = tPbrdercolor;
+            } 
+            /*else {
+                ctx2.moveTo(pe[0]+2, pe[1]+2);
+                ctx2.lineTo(pe[0]+2-l1,pe[1]+2);
+                ctx2.lineTo(pe[0]+2,pe[1]+2-l2);
+                ctx2.fillStyle=bgcolor;
+                ctx2.strokeStyle = bgcolor;
+            }*/
+            ctx2.closePath();
+            ctx2.fill();            
+            ctx2.stroke();
+            
+            degb = Math.atan( (pe[0]-pbOnBotX)/(pe[1]-pbOnRigY) ); //a value between -PI/2 and PI/2 radians.
+            ctx2.translate(Math.floor(cp[0]), Math.floor(cp[1]));
+            
+            ctx2.rotate(degb*2); // 2b degree   => **: rotate 不能在 translate 之前做
+            ctx2.translate(-sX, -pe[1]);
+            ctx2.beginPath();
+            ctx2.moveTo(sX,sY);
+            ctx2.lineTo(sX, pe[1]);
+            ctx2.lineTo(sX+l1,pe[1]);
+            dif = Math.abs(pbOnRigY-sY)*Math.tan(degb);
+            ctx2.lineTo(sX+dif,sY);
+            ctx2.lineTo(sX,sY);            
+            dif = dif/Math.sin(degb);
+            dif2 = (pbOnRigY-sY);
+            ctx2.closePath();
+            ctx2.fillStyle=ctx2.createPattern(nC,"no-repeat");
+            ctx2.fill();
+            ctx2.strokeStyle=tPbrdercolor;
+            ctx2.stroke();         
+            
+            ctx2.translate(sX, sY + dif2);
+            //dOriPattern(ctx2, "#ffff00");
+            ctx2.rotate(-degb); 
+            ctx2.translate(-sX, -sY);
+            //dOriPattern(ctx2, "#00ffff");
+            ctx2.translate(0, dif);
+            l3 = Math.sqrt( Math.pow(l2,2) + Math.pow(l1,2) ) - dif; 
+            l5 = (l4<100)? l4:((l4/2)>50)?50:(l4/2);
+            p2 = [l5, sY-l5*Math.tan(degb)];
+            p3 = [p2[0], sY+l3-l5*Math.tan(degb)];       
+        }        
+    }
+    p4=[sX, sY+l3];    
+    doPaintShadow(ctx2, p1, p2, p3, p4);
+}
+
+function doPaintShadow(ctx2, p1, p2, p3, p4) {
+    var shdw = 55;
+    var shdw2 = p2[0];
+    for (var i = 0, j = -1, k = 1; i <= 1; i++, j *= -1, k--) {
+      ctx2.beginPath();        
+/*      ctx2.moveTo(sX, sY);
+      ctx2.lineTo(sX, sY+l3);
+      ctx2.lineTo(sX+j*shdw2, sY+l3);
+      ctx2.lineTo(sX+j*shdw2, sY);*/
+      ctx2.moveTo(p1[0], p1[1]);
+      ctx2.lineTo(sX+j*p2[0], p2[1]);
+      ctx2.lineTo(sX+j*p3[0], p3[1]);
+      ctx2.lineTo(p4[0], p4[1]);
+
+      ctx2.closePath();
+      var tlg=(i == 0)?ctx2.createLinearGradient(sX-shdw2, sY, sX, sY):ctx2.createLinearGradient(sX, sY, sX+shdw2, sY);
+      te = Pg_cs[ k ];
+      tlg.addColorStop(0, "rgba("+te[0]+","+te[0]+","+te[0]+","+((i==0)?0.01:0.4)+")");
+      tlg.addColorStop(((i==0)?0.6:0.5), "rgba("+te[i]+","+te[i]+","+te[i]+","+((i==0)?0.1:0.1)+")");
+      tlg.addColorStop(1, "rgba("+te[1]+","+te[1]+","+te[1]+","+((i==0)?0.4:0.01)+")");
+      ctx2.fillStyle=tlg;
+      ctx2.fill();
+      //ctx2.strokeStyle = "#0000ff";
+      //ctx2.stroke();
+    } 
+}
+
+function dOriPattern(ctx2, tc) {
+    ctx2.beginPath();
+    ctx2.moveTo(sX,sY);
+    ctx2.lineTo(sX,sY+sA[1]);
+    ctx2.lineTo(sX+sA[0],sY+sA[1]);
+    ctx2.lineTo(sX+sA[0],sY);
+    ctx2.closePath();
+    ctx2.strokeStyle=tc;
+    ctx2.stroke();  
 }
 
 var sA = [];    // to store the size(width & height) of cover image for the other imgs.
@@ -405,15 +606,15 @@ function onLoad(){
         tP = tA[0]; 
         if ( (i==0) || (i==(allpg.length-1)) ) {
             //tP.style["transform"] = "rotateY(" + minDeg + "deg) translateZ(8px)";
-            tP.style["transform"] = "rotateY(" + minDeg + "deg)";// translateZ(0px)";
+            //tP.style["transform"] = "rotateY(" + minDeg + "deg)";// translateZ(0px)";
         } else {
-            tP.style["transform"] = "rotateY(" + minDeg + "deg)";// translateZ(0px)";
+            //tP.style["transform"] = "rotateY(" + minDeg + "deg)";// translateZ(0px)";
             /*$(allpl[j]).off("onmousemove");
             $(allpl[j+1]).off("onmousemove");
             $(allpl[j]).on("onmousemove", page_mousemove);
             $(allpl[j+1]).on("onmousemove", page_mousemove);*/
         }       
-        tP.style["z-index"] = -j;
+        //tP.style["z-index"] = -j;
         
         for (k = 0; k <= 1; k++) {
             allpp[j+k].style["display"] = "none";
@@ -422,7 +623,7 @@ function onLoad(){
         //tP.style["display"] = "none";
     }
     //$(allpg[0])[0].style["display"] = "inherit";
-    $(allpg[0])[0].style["z-index"] = zindv;
+    //$(allpg[0])[0].style["z-index"] = zindv;
 
     $("canvas").off("mousedown");
     $("canvas").on("mousedown", page_mousedown);
@@ -438,30 +639,24 @@ function onLoad(){
         sA = handleResize(c0);
         var ctx2 = cc[0].getContext('2d');        
         showBookViewer();
-        ctx2.drawImage(c0, sX, sY, sA[0], sA[1]);
         
         shaCfg.spw = Math.floor(sA[0]*shaCfg.widPer);
-        /*shaCfg.rect = [ [0, brderWid, shaCfg.spw, sA[1]-brderWid],
-                        [sA[0]-shaCfg.spw, brderWid, sA[0], sA[1]-brderWid] ];
-        shaCfg.grd = [ [ 0, brderWid, shaCfg.spw, brderWid],
-                        [ sA[0]-shaCfg.spw, brderWid, sA[0], brderWid] ];
-                        */
-        shaCfg.rect = [ [0, 0, shaCfg.spw, sA[1]-0],
-                        [sA[0]-shaCfg.spw, 0, sA[0], sA[1]-0] ];
-        shaCfg.grd = [ [ 0, 0, shaCfg.spw, 0],
-                        [ sA[0]-shaCfg.spw, 0, sA[0], 0] ];
+        shaCfg.rect = [ [sX, sY, shaCfg.spw, sA[1]],
+                        [sX-shaCfg.spw, sY, shaCfg.spw, sA[1]] ];
+        shaCfg.grd = [ [ sX, sY, sX+shaCfg.spw, sY],
+                        [ sX-shaCfg.spw, sY, sX, sY] ];
 
         canPos.c_b = [sX, sY, sA[0], sA[1]];
         canPos.pgs = [ sX+(sA[0]-sA[2])/2, sY+(sA[1]-sA[3])/2, sA[2], sA[3]];
-        //alert(sA[0] + "," + sA[1]);
         
-        //c1.src = imgPath + "1.jpg";
-        //allpl[i].onmousemove = function(event) {
+        //ctx2.drawImage(c0, sX-shaCfg.spw, sY, sA[0]+shaCfg.spw, sA[1]);
+        ctx2.drawImage(c0, sX, sY, sA[0], sA[1]);
+        //alert(sA[0] + "," + sA[1]);
     }    
 
     c0loadedti = setInterval(addOnLoad, 500);
     
-    if (1) {
+    if (0) {
         c1.src = imgPath + "1.jpg";
         c1.onload = function() {
             var ctx2 = cl1.getContext('2d');
@@ -504,18 +699,7 @@ function addOnLoad() {
             
             for (var i = 0; i < allpp.length; i++) {
                 allpp[i].src = imgPath + bimgNameArray[i];
-                /*if ( (i<=0) || (i>=(allpp.length-1)) ) {
-                    sx = canPos.c_b[0];
-                    sy = canPos.c_b[1];
-                    ex = canPos.c_b[2];
-                    ey = canPos.c_b[3];
-                } else {
-                    sx = canPos.pgs[0];
-                    sy = canPos.pgs[1];
-                    ex = canPos.pgs[2];
-                    ey = canPos.pgs[3];
-                }*/
-                
+      
                 allpp[i].onload = function(event) {
                     sE = event.srcElement;
                     pE = sE.parentElement;
@@ -523,11 +707,13 @@ function addOnLoad() {
                     var ib_c = ( (tId[0] == "c") || (tId[0] == "b" ) ); 
                     var cP = (ib_c)?canPos.c_b:canPos.pgs;
                     var ctx2 = pE.getContext('2d');
-                    ctx2.drawImage(sE, cP[0], cP[1], cP[2], cP[3]);                
-
                     var i0_last = ( (tId == "c0") || (tId == "b1" ) );
-                    if ( !i0_last ) {
-                        imIndM2 = parseInt(tId[1]) % 2;
+                    if ( i0_last ) {
+                        //ctx2.drawImage(sE, cP[0]-shaCfg.spw, cP[1], cP[2]+shaCfg.spw, cP[3]);
+                        ctx2.drawImage(sE, cP[0], cP[1], cP[2], cP[3]);
+                    } else {
+                        ctx2.drawImage(sE, cP[0], cP[1], cP[2], cP[3]);
+                        /*imIndM2 = parseInt(tId[1]) % 2;
                         te = shaCfg.grd[ imIndM2 ];
                         tlg=ctx2.createLinearGradient(te[0], te[1], te[2], te[3]);
                         te = shaCfg.Pg_cs[ imIndM2 ];
@@ -536,12 +722,12 @@ function addOnLoad() {
 
                         ctx2.fillStyle=tlg;
                         te = shaCfg.rect[ imIndM2 ];
-                        ctx2.fillRect(te[0], te[1], te[2], te[3]);                    
-                    }                
+                        ctx2.fillRect(te[0], te[1], te[2], te[3]);*/
+                    }                    
                     //alert(sA[0] + "," + sA[1]);
                     ts = sE.src;
                     ts = ts.substring(ts.lastIndexOf("/")+1);
-                    //console.log("img '" + sE.id + ":" + ts + "' start loaded.")
+                    console.log("img '" + sE.id + ":" + ts + "' @(" + cP[0] + "," + cP[1] + "," + cP[2] + "," + cP[3] + ")");
                 };
             }
         }
@@ -638,19 +824,18 @@ function chk_LoR_page_adj_pgInd(x,y,id) {
     isOnLpg = (x>=(sX-sA[0])) && (x<=sX) && isTrue ;
     isOnRpg = (x>=sX) && (x<=(sX+sA[0])) && isTrue;
         
-    if ( isOnLpg ) {
-        if (imInd < (imCnt-1)) {            
-            imInd -= ( ((imInd%2)==0)?1:0 );   
+    if ( (imInd > 0) && (imInd < (imCnt-1)) ) {
+        if ( isOnLpg ) {        
+            imInd -= ( ((imInd%2)==0)?1:0 );
+            pshft = - Math.abs(pshft);
+        } else if ( isOnRpg ) {
+            imInd += (imInd % 2);
+            pshft = Math.abs(pshft);
         }
-        pshft = - Math.abs(pshft);
-    } else if ( isOnRpg ) {
-        if (imInd > 0) {
-            imInd += (imInd % 2);    
-        }
-        pshft = Math.abs(pshft);
     }
     //document.getElementById("pgInd").innerHTML = "pgInd: " + imInd +", sl,t: (" + Math.floor(cl0.left) + "," + Math.floor(cl0.top) + "), x,y: (" + x + "," + y + ")";
     document.getElementById("pgInd").innerHTML = "pgInd: " + imInd +", x,y: (" + x + "," + y + ")";
+    console.log("Line727: imInd=" + imInd);
 }
 
 function chg_2_ori_size(pg) {
