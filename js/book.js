@@ -247,7 +247,7 @@ function page_mouseup(event) {
     console.log("mouseup in");
     event.preventDefault();
     if ((c1.src.indexOf("#") != -1) || ((mouseState != "0") && (mouseState != "01")) ||
-        ((!isOnLpg_d) && (!isOnRpg_d) && (mouseState == "0"))) { // mouseState==2 to prevent re-entry.
+        ((!isOnLpg_d) && (!isOnRpg_d) && (mouseState == "0"))) {
         return;
     }
     mouseState += "2";
@@ -264,7 +264,8 @@ function page_mouseup(event) {
     if ((startC == null) || (tId[0] == "c") || (tId[0] == "b") || ((Math.abs(uX - dX) < 5) && (Math.abs(uY - dY) < 5))) { // cover & back page don't slide but just turn the page.
         //book_click(event);
         if (mouseState == "02") {
-            if ((tId[0] != "c") && (tId[0] != "b")) {
+            //if ((tId[0] != "c") && (tId[0] != "b")) {
+            if ( (imInd != 0) && (imInd != (imCnt-1)) ) {
                 startC.width = startC.width;
             }
             zindv++;
@@ -273,10 +274,12 @@ function page_mouseup(event) {
 
         if (isOnLpg_d) {
             imInd = (imInd <= 2) ? 0 : (imInd - 2);
-            setTimeout(doShowPageByInterval, showItvl, sX - sA[0], sY + sA[1], sX + sA[0], sY + sA[1], showItvl, shkRatio, sX-5, sY + (sA[1]*4/5));
+            //setTimeout(doShowPageByInterval, showItvl, sX - sA[0], sY + sA[1], sX + sA[0], sY + sA[1], showItvl, shkRatio, sX-5, sY + (sA[1]*4/5));
+            setTimeout(doShowPageByInterval, showItvl, sX - sA[0], sY + sA[1], sX + sA[0], sY + sA[1], showItvl, shkRatio);
         } else if (isOnRpg_d) {
             imInd = (imInd >= (imCnt - 3)) ? (imCnt - 1) : (imInd + 2);
-            setTimeout(doShowPageByInterval, showItvl, sX + sA[0], sY + sA[1], sX - sA[0], sY + sA[1], showItvl, shkRatio, sX-5, sY + (sA[1]*4/5));
+            //setTimeout(doShowPageByInterval, showItvl, sX + sA[0], sY + sA[1], sX - sA[0], sY + sA[1], showItvl, shkRatio, sX-5, sY + (sA[1]*4/5));
+            setTimeout(doShowPageByInterval, showItvl, sX + sA[0], sY + sA[1], sX - sA[0], sY + sA[1], showItvl, shkRatio);
         }
     } else {
         var dP = null;
@@ -292,9 +295,19 @@ function page_mouseup(event) {
             }
         } else {    //drop not on book area, return to original page
             if (isOnLpg_d) {
-                dP = [sX - sA[0], sY + sA[1]];
+                if (uX > sX) {
+                    dP = [sX + sA[0], sY + sA[1]];
+                    imInd = (imInd <= 2) ? 0 : (imInd - 2);
+                } else {
+                    dP = [sX - sA[0], sY + sA[1]];    
+                }                
             } else if (isOnRpg_d) {
-                dP = [sX + sA[0], sY + sA[1]];
+                if (uX < sX) {
+                    dP = [sX - sA[0], sY + sA[1]];
+                    imInd = (imInd >= (imCnt - 3)) ? (imCnt - 1) : (imInd + 2);
+                } else {
+                    dP = [sX + sA[0], sY + sA[1]];   
+                }
             } else {
                 console.log("???@288")
                 return;
@@ -332,30 +345,48 @@ var tPbrdercolor = "#34495e", bgcolor = "#ecf0f1";;
 var Pg_cs = [["0", "255"], ["255", "0"]];   // right and left
 var pbOnTopX, pbOnBotX, pbOnLefY, pbOnRigY;
 var isValid, l1, l2, l3, degb;
+
 function doPagePositionByMouseCor(cE, nC, nnC, ofsX, ofsY) {
     var cp = [ofsX, ofsY];    // current position in canvas
-    var pe = [sX + sA[0], sY + sA[1]];             // page right-bottom endpoint
+    var pe; // page right-bottom or left-bottom endpoint
     var p1 = [sX, sY];
     var trickValid = null;
+    var tId = cE.id;
+    
+    if (isOnRpg_d) {
+        pe = [sX + sA[0], sY + sA[1]]; // page right-bottom endpoint
+    } else if (isOnLpg_d) {
+        pe = [sX - sA[0], sY + sA[1]]; // page left-bottom endpoint
+    } else {
+        console.log("???@346"); return;
+    }
 
     ctx2 = cE.getContext('2d');
     if ((cp[0] == pe[0]) && (cp[1] == pe[1])) { // start at left/right page, drop on right, handle last step.
+        cE.width = cE.width;  // **Trick to clear canvas.
+
         if (isOnRpg_d) {
-            cE.width = cE.width;  // **Trick to clear canvas.
             ctx2.drawImage(cE.children[0], sX, sY, sA[0], sA[1]);
-            doPaintShadow(ctx2, p1, [shaCfg.spw, sY], [shaCfg.spw, pe[1]], [sX, pe[1]]);
-            console.log("Last step of sliding back: t2r.")
-            return;
-        } else if (isOnLpg_d) {
-            trickValid = [true, true, false, false];
+            if ( tId!="bl0" ) {
+                doPaintShadow(ctx2, p1, [shaCfg.spw, sY], [shaCfg.spw, pe[1]], [sX, pe[1]]);
+            }
+        } else {
+            ctx2.drawImage(cE.children[0], pe[0], sY, sA[0], sA[1]);
+            if ( tId!="cl1" ) {
+                doPaintShadow(ctx2, p1, [-shaCfg.spw, sY], [-shaCfg.spw, pe[1]], [sX, pe[1]]);
+            }
         }
+        console.log("Last step of sliding back: t2r.")
+        return;
     } else if ((cp[0] == (sX - sA[0])) && (cp[1] == pe[1])) {   // start at left/right page, drop on left, handle last step.
         if (isOnRpg_d) {
             trickValid = [true, true, false, false];
         } else if (isOnLpg_d) {
             cE.width = cE.width;  // **Trick to clear canvas.
             ctx2.drawImage(cE.children[0], sX - sA[0], sY, sA[0], sA[1]);
-            doPaintShadow(ctx2, p1, [shaCfg.spw, sY], [shaCfg.spw, pe[1]], [sX, pe[1]]);
+            if ( tId!="cl1" ) {
+                doPaintShadow(ctx2, p1, [-shaCfg.spw, sY], [-shaCfg.spw, pe[1]], [sX, pe[1]]);
+            }
             console.log("Last step of sliding back: t2l.")
             return;
         }
@@ -368,29 +399,37 @@ function doPagePositionByMouseCor(cE, nC, nnC, ofsX, ofsY) {
     pbOnTopX = Math.floor(((sY - ce[1]) / slope_pb) + ce[0]);
     pbOnBotX = Math.floor(((pe[1] - ce[1]) / slope_pb) + ce[0]);
     pbOnLefY = Math.floor(slope_pb * (sX - ce[0]) + ce[1]);
-    pbOnRigY = Math.floor(slope_pb * (pe[0] - ce[0]) + ce[1]);
-    isValid = [(pbOnTopX >= sX) && (pbOnTopX <= pe[0]),
-        (pbOnBotX >= sX) && (pbOnBotX <= pe[0]),
-        (pbOnLefY >= sY) && (pbOnLefY <= pe[1]),
-        (pbOnRigY >= sY) && (pbOnRigY <= pe[1])];
+    pbOnRigY = Math.floor(slope_pb * (pe[0] - ce[0]) + ce[1]);            
+    var isValid = [false,false,false,false];
+    if (isOnRpg_d) {
+        isValid[0] = (pbOnTopX >= sX) && (pbOnTopX <= pe[0]);
+        isValid[1] = (pbOnBotX >= sX) && (pbOnBotX <= pe[0]);
+    } else {    // isOnLpg_d
+        isValid[0] = (pbOnTopX <= sX) && (pbOnTopX >= pe[0]);
+        isValid[1] = (pbOnBotX <= sX) && (pbOnBotX >= pe[0]);
+    }
+    isValid[2] = (pbOnLefY >= sY) && (pbOnLefY <= pe[1]);
+    isValid[3] = (pbOnRigY >= sY) && (pbOnRigY <= pe[1]);        
+
     if (trickValid != null) {
         isValid = trickValid;
     }
     //console.log("valid: "+isValid[0]+","+isValid[1]+","+isValid[2]+","+isValid[3]);
 
-    if ((((!isValid[0]) && isValid[1] && isValid[2])) ||
+    /*if ((((!isValid[0]) && isValid[1] && isValid[2])) ||
         (!(isValid[0] || isValid[1] || isValid[2] || isValid[3])) ||
-        (isValid[0] && isValid[3])) { // (!bottom) and left and right
+        (isValid[0] && isValid[3])) { 
         return;
-    }
-    if (((!isValid[1]) && isValid[2] && isValid[3])) { // (!bottom) and left and right
+    }*/
+    if (((!isValid[1]) && isValid[2] && isValid[3])) { // (!bottom) and left and right: cursor to beyond right-side
+        // todo1
         ctx2.moveTo(ofsX, ofsY);
-        ctx2.lineTo(sX, sY + sA[1]);
-        tdeg = Math.atan((sY + sA[1] - cp[1]) / (cp[0] - sX)) / 2;
+        ctx2.lineTo(sX, pe[1]);
+        tdeg = Math.atan((pe[1] - cp[1]) / (cp[0] - sX)) / 2;
         ts = (Math.sin(tdeg) * sA[0]) << 1;
         degb = Math.PI / 2 - tdeg;
-        ofsY = sY + sA[1] - (ts * Math.sin(degb));
-        ofsX = sX + sA[0] - (ts * Math.cos(degb));
+        ofsY = pe[1] - (ts * Math.sin(degb));
+        ofsX = pe[0] - (ts * Math.cos(degb));
         console.log("mousemove315");
         doPagePositionByMouseCor(startC, nC, nnC, ofsX, ofsY);
         return;
@@ -398,25 +437,38 @@ function doPagePositionByMouseCor(cE, nC, nnC, ofsX, ofsY) {
     console.log("bC=" + cE.id + ",nC=" + nC.id + ",nnC=" + ((nnC == null) ? "null" : nnC.id));
     var dif, dif2, p2, p3, p4;
     var l4 = Math.sqrt(Math.pow(cp[0] - pe[0], 2) + Math.pow(cp[1] - pe[1], 2)) >> 1;
-    if ((isValid[1] && isValid[3])) {
+    if ( isValid[1] && isValid[3] ) {
+        var sigv = 1, sv=0;
         cE.width = cE.width;  // **Trick to clear canvas.
-        //ctx2.drawImage(pi[pnum], sX, sY, sA[0], sA[1]);
-        ctx2.drawImage(cE.children[0], sX, sY, sA[0], sA[1]);
-        doPaintShadow(ctx2, p1, [shaCfg.spw, sY], [shaCfg.spw, pe[1]], [sX, pe[1]]);
+        
+        if (isOnRpg_d) {
+            ctx2.drawImage(cE.children[0], sX, sY, sA[0], sA[1]);
+            if ( tId!="bl0" ) {
+                doPaintShadow(ctx2, p1, [shaCfg.spw, sY], [shaCfg.spw, pe[1]], [sX, pe[1]]);
+            }
+            sv = sX;            
+        } else {
+            sigv=-1;
+            //ctx2.drawImage(cE.children[0], pe[0], sY, sA[0], sA[1]);
+            if ( tId!="cl1" ) {
+                //doPaintShadow(ctx2, p1, [-shaCfg.spw, sY], [-shaCfg.spw, pe[1]], [sX, pe[1]]);
+            }
+            sv = pe[0];
+        }
 
         l1 = Math.sqrt(Math.pow(pbOnBotX - cp[0], 2) + Math.pow(pe[1] - cp[1], 2));
         l2 = Math.sqrt(Math.pow(pe[0] - cp[0], 2) + Math.pow(pbOnRigY - cp[1], 2));
         ctx2.beginPath();
         if (nnC != null) {
             ctx2.moveTo(pe[0], pe[1]);
-            ctx2.lineTo(pe[0] - l1, pe[1]);
+            ctx2.lineTo(pe[0] - sigv*l1, pe[1]);
             ctx2.lineTo(pe[0], pe[1] - l2);
             ctx2.fillStyle = ctx2.createPattern(nnC, "no-repeat");
             ctx2.strokeStyle = tPbrdercolor;
         } else {
-            ctx2.moveTo(pe[0]+2, pe[1]+2);
-            ctx2.lineTo(pe[0]-l1,pe[1]+2);
-            ctx2.lineTo(pe[0]+2,pe[1]-l2);
+            ctx2.moveTo(pe[0]+sigv*2, pe[1]+sigv*2);
+            ctx2.lineTo(pe[0]-sigv*l1,pe[1]+sigv*2);
+            ctx2.lineTo(pe[0]+sigv*2,pe[1]-sigv*l2);
             ctx2.fillStyle=bgcolor;
             ctx2.strokeStyle = bgcolor;
         }
@@ -426,13 +478,16 @@ function doPagePositionByMouseCor(cE, nC, nnC, ofsX, ofsY) {
 
         degb = Math.atan((pe[0] - pbOnBotX) / (pe[1] - pbOnRigY)); //a value between -PI/2 and PI/2 radians.
         ctx2.translate(Math.floor(cp[0]), Math.floor(cp[1]));
-
         ctx2.rotate(degb * 2); // 2b degree   => **: rotate 不能在 translate 之前做
-        ctx2.translate(-sX, -pe[1]);
+        if (isOnRpg_d) {
+            ctx2.translate(-sX, -pe[1]);
+        } else {
+            ctx2.translate(-pe[0], -pe[1]);
+        }
         ctx2.beginPath();
-        ctx2.moveTo(sX, pe[1] - l2);
-        ctx2.lineTo(sX, pe[1]);
-        ctx2.lineTo(sX + l1, pe[1]);
+        ctx2.moveTo(sv, pe[1] - l2);
+        ctx2.lineTo(sv, pe[1]);
+        ctx2.lineTo(sv + sigv*l1, pe[1]);
         dif2 = (pbOnRigY - sY);
         ctx2.closePath();
         ctx2.fillStyle = ctx2.createPattern(nC, "no-repeat");
@@ -440,20 +495,37 @@ function doPagePositionByMouseCor(cE, nC, nnC, ofsX, ofsY) {
         ctx2.strokeStyle = tPbrdercolor;
         ctx2.stroke();
 
-        ctx2.translate(sX, sY + dif2);
-        //dOriPattern(ctx2, "#ffff00");
-        ctx2.rotate(-degb);
-        ctx2.translate(-sX, -sY);
-        //dOriPattern(ctx2, "#00ffff");
+        if (isOnRpg_d) {
+                ctx2.translate(sX, sY + dif2);
+                ctx2.rotate(-degb);
+                ctx2.translate(-sX, -sY);
+        } else {
+                ctx2.translate(pe[0], sY + dif2);
+                dOriPattern2(ctx2, "blue");
+                ctx2.rotate(-degb);
+                ctx2.translate(-sX, -sY);
+                dOriPattern(ctx2, "#00ffff");    
+        }
         l3 = Math.sqrt(Math.pow(l2, 2) + Math.pow(l1, 2));
         p2 = [(l4 / 3), sY + (l4 / 3) / Math.tan(degb)];
         p3 = [p2[0], sY + l3 - (l4 / 3) * Math.tan(degb)];
     } else if ((isValid[0] && isValid[1])) {
+        var sigv = 1, sv=0;
         cE.width = cE.width;  // **Trick to clear canvas.
-        //ctx2.drawImage(pi[pnum], sX, sY, sA[0], sA[1]);
-        ctx2.drawImage(cE.children[0], sX, sY, sA[0], sA[1]);
-        doPaintShadow(ctx2, p1, [shaCfg.spw, sY], [shaCfg.spw, pe[1]], [sX, pe[1]]);
-
+        
+        if (isOnRpg_d) {
+            ctx2.drawImage(cE.children[0], sX, sY, sA[0], sA[1]);
+            if ( tId!="bl0" ) {
+                doPaintShadow(ctx2, p1, [shaCfg.spw, sY], [shaCfg.spw, pe[1]], [sX, pe[1]]);
+            }
+        } else {
+            ctx2.drawImage(cE.children[0], pe[0], sY, sA[0], sA[1]);
+            if ( tId!="cl1" ) {
+                doPaintShadow(ctx2, p1, [-shaCfg.spw, sY], [-shaCfg.spw, pe[1]], [sX, pe[1]]);
+            }
+            sigv = -1;
+        }
+        
         if (cp[1] >= pe[1]) {
             ctx2.beginPath();
             if (nnC != null) {
@@ -464,10 +536,10 @@ function doPagePositionByMouseCor(cE, nC, nnC, ofsX, ofsY) {
                 ctx2.fillStyle = ctx2.createPattern(nnC, "no-repeat");
                 ctx2.strokeStyle = tPbrdercolor;
             } else {
-                ctx2.moveTo(pe[0] + 2, pe[1] + 2);
-                ctx2.lineTo(pbOnBotX, pe[1] + 2);
-                ctx2.lineTo(pbOnTopX, sY - 2);
-                ctx2.lineTo(pe[0] + 2, sY - 2);
+                ctx2.moveTo(pe[0] + sigv*2, pe[1] + sigv*2);
+                ctx2.lineTo(pbOnBotX, pe[1] + sigv*2);
+                ctx2.lineTo(pbOnTopX, sY - sigv*2);
+                ctx2.lineTo(pe[0] + sigv*2, sY - sigv*2);
                 ctx2.fillStyle = bgcolor;
                 ctx2.strokeStyle = bgcolor;
             }
@@ -480,21 +552,38 @@ function doPagePositionByMouseCor(cE, nC, nnC, ofsX, ofsY) {
             dega = Math.asin(sA[1] / ts);
             degb = Math.PI - 2 * dega;
             ctx2.rotate(-degb);
-            ctx2.translate(-sX, -pe[1]);
+            if (isOnRpg_d) {
+                ctx2.translate(-sX, -pe[1]);
+            } else {
+                ctx2.translate(-pe[0], -pe[1]);
+            }
             ctx2.beginPath();
             ctx2.moveTo(sX, sY);
             ctx2.lineTo(sX, pe[1]);
-            ctx2.lineTo(sX + (pe[0] - pbOnBotX), pe[1]);
-            ctx2.lineTo(sX + (pe[0] - pbOnTopX), sY);
+            if (isOnRpg_d) {
+                ctx2.lineTo(sX + (pe[0] - pbOnBotX), pe[1]);
+                ctx2.lineTo(sX + (pe[0] - pbOnTopX), sY);                
+            } else {
+                ctx2.lineTo(sX - (pbOnBotX-pe[0]), pe[1]);
+                ctx2.lineTo(sX - (pbOnTopX-pe[0]), sY);
+            }
             ctx2.closePath();
             ctx2.fillStyle = ctx2.createPattern(nC, "no-repeat");
             ctx2.fill();
             ctx2.strokeStyle = tPbrdercolor;
             ctx2.stroke();
 
-            ctx2.translate(sX + (pe[0] - pbOnTopX), sY);
+            if (isOnRpg_d) {
+                ctx2.translate(sX + (pe[0] - pbOnTopX), sY);    
+            } else {
+                ctx2.translate(sX - (pbOnTopX-pe[0]), sY);
+            }
             ctx2.rotate(degb / 2); // 2b degree   => **: rotate 銝滩�賢銁 translate 銋见�滚��
-            ctx2.translate(-sX, -sY);
+            if (isOnRpg_d) {
+                ctx2.translate(-sX, -sY);
+            } else {
+                ctx2.translate(-pe[0], -sY);
+            }
 
             l3 = ts;
             l5 = (l4 < 100) ? l4 : ((l4 / 2) > 50) ? 50 : (l4 / 2);
@@ -511,16 +600,16 @@ function doPagePositionByMouseCor(cE, nC, nnC, ofsX, ofsY) {
             ctx2.beginPath();
             if (nnC != null) {
                 ctx2.moveTo(pe[0], pe[1]);
-                ctx2.lineTo(pe[0] - l1, pe[1]);
+                ctx2.lineTo(pe[0] - sigv*l1, pe[1]);
                 ctx2.lineTo(pbOnTopX, sY);
                 ctx2.lineTo(pe[0], sY);
                 ctx2.fillStyle = ctx2.createPattern(nnC, "no-repeat");
                 ctx2.strokeStyle = tPbrdercolor;
             } else {
-                ctx2.moveTo(pe[0]+2, pe[1]+2);
-                ctx2.lineTo(pe[0]-l1,pe[1]+2);
-                ctx2.lineTo(pbOnTopX-2, sY-2);
-                ctx2.lineTo(pe[0]+2, sY-2);
+                ctx2.moveTo(pe[0]+sigv*2, pe[1]+sigv*2);
+                ctx2.lineTo(pe[0]-sigv*l1,pe[1]+sigv*2);
+                ctx2.lineTo(pbOnTopX-sigv*2, sY-2);
+                ctx2.lineTo(pe[0]+sigv*2, sY-2);
                 ctx2.fillStyle=bgcolor;
                 ctx2.strokeStyle = bgcolor;
             }
@@ -531,14 +620,18 @@ function doPagePositionByMouseCor(cE, nC, nnC, ofsX, ofsY) {
             degb = Math.atan((pe[0] - pbOnBotX) / (pe[1] - pbOnRigY)); //a value between -PI/2 and PI/2 radians.
             ctx2.translate(Math.floor(cp[0]), Math.floor(cp[1]));
 
-            ctx2.rotate(degb * 2); // 2b degree   => **: rotate 不能在 translate 之前做
-            ctx2.translate(-sX, -pe[1]);
+            ctx2.rotate(degb * 2);
+            if (isOnRpg_d) {
+                ctx2.translate(-sX, -pe[1]);
+            } else {
+                ctx2.translate(-pe[0], -pe[1]);
+            }
             ctx2.beginPath();
             ctx2.moveTo(sX, sY);
             ctx2.lineTo(sX, pe[1]);
-            ctx2.lineTo(sX + l1, pe[1]);
+            ctx2.lineTo(sX + sigv*l1, pe[1]);
             dif = Math.abs(pbOnRigY - sY) * Math.tan(degb);
-            ctx2.lineTo(sX + dif, sY);
+            ctx2.lineTo(sX + sigv*dif, sY);
             ctx2.lineTo(sX, sY);
             dif = dif / Math.sin(degb);
             dif2 = (pbOnRigY - sY);
@@ -549,10 +642,15 @@ function doPagePositionByMouseCor(cE, nC, nnC, ofsX, ofsY) {
             ctx2.stroke();
 
             ctx2.translate(sX, sY + dif2);
-            //dOriPattern(ctx2, "#ffff00");
+            dOriPattern(ctx2, "#ffff00");
             ctx2.rotate(-degb);
-            ctx2.translate(-sX, -sY);
-            //dOriPattern(ctx2, "#00ffff");
+            if (isOnRpg_d) {
+                ctx2.translate(-sX, -sY);
+            } else {
+                ctx2.translate(-pe[0], -sY);
+            }
+
+            dOriPattern(ctx2, "#00ffff");
             ctx2.translate(0, dif);
             l3 = Math.sqrt(Math.pow(l2, 2) + Math.pow(l1, 2)) - dif;
             l5 = (l4 < 100) ? l4 : ((l4 / 2) > 50) ? 50 : (l4 / 2);
@@ -561,7 +659,10 @@ function doPagePositionByMouseCor(cE, nC, nnC, ofsX, ofsY) {
         }
     }
     p4 = [sX, sY + l3];
-    doPaintShadow(ctx2, p1, p2, p3, p4);
+    if ( (tId!="bl0") && (tId!="cl1") ) {
+        doPaintShadow(ctx2, p1, p2, p3, p4);
+        //console.log("doPaintShadow@627:" + imInd);
+    }
 }
 
 function doPaintShadow(ctx2, p1, p2, p3, p4) {
@@ -592,6 +693,17 @@ function doPaintShadow(ctx2, p1, p2, p3, p4) {
         //ctx2.strokeStyle = "#0000ff";
         //ctx2.stroke();
     }
+}
+
+function dOriPattern2(ctx2, tc) {
+    ctx2.beginPath();
+    ctx2.moveTo(sX, sY);
+    ctx2.lineTo(sX, sY + sA[1]);
+    ctx2.lineTo(sX - sA[0], sY + sA[1]);
+    ctx2.lineTo(sX - sA[0], sY);
+    ctx2.closePath();
+    ctx2.strokeStyle = tc;
+    ctx2.stroke();
 }
 
 function dOriPattern(ctx2, tc) {
