@@ -488,6 +488,8 @@ function chk_LoR_page_adj_pgInd(x, y, id) {
 
 function md(event) {
     var cE = event.target;
+    var tX = event.clientX;
+    var tY = event.clientY;
 
     if (!isImgArrayLoaded) {
         alert("Book images not loaded. Drag them into the dropzone.");
@@ -496,6 +498,10 @@ function md(event) {
     if (mouseState != null) {
       return;
     }
+    if ( (tX < (sX-sA[0])) || (tX > (sX+sA[0])) || (tY < sY) || (tY > (sY+sA[1])) ) { 
+      return;   
+    }
+
     var isLoadingSomeImg = false;
     for (var i=0; i<iLA.length; i++) {
       //console.log("chk "+i+":"+iLA[i]);
@@ -509,8 +515,8 @@ function md(event) {
       return;
     }
     
-    dX = event.clientX;
-    dY = event.clientY;
+    dX = tX;
+    dY = tY;
     [isOnLpg_d, isOnRpg_d] = chk_LoR_page_adj_pgInd(dX, dY, cE.id);
     if ( ((imInd == imCnt) && isOnRpg_d) || ((imInd == 0) && isOnLpg_d) ) {
       isOnLpg_d = isOnRpg_d = null;
@@ -526,12 +532,13 @@ function md(event) {
 function mu(event) {
     var cE = event.target;
     var slideMode = false;
-
-    if ( (mouseState != "0")&&(mouseState != "01") ) {
+    var tX = event.clientX, tY = event.clientY;
+    
+    if ( (mouseState != "0")&&(mouseState != "01") ) {          
       return;
     }
     
-    uX = event.clientX, uY = event.clientY;
+    uX = tX, uY = tY;
   
     mouseState += "2";
     [isOnLpg_u, isOnRpg_u] = chk_LoR_page_adj_pgInd(uX, uY, cE.id);
@@ -591,9 +598,9 @@ function mm(event) {
             return;
         }
     }
-    if ( (imInd != -1) && (imInd < imCnt) && (tx > rxR) && (ty > yR) ) {
+    if ( (imInd != -1) && (imInd < imCnt) && (tx > rxR) && (tx < (sX+sA[0])) && (ty > yR) && (ty < (sY+sA[1])) ) {
         bC.style.cursor = "nw-resize";
-    } else  if ( (imInd > 0) && (tx < lxR) && (ty > yR) ) {
+    } else  if ( (imInd > 0) && (tx < lxR) && (tx > (sX-sA[0])) && (ty > yR) && (ty < (sY+sA[1]))  ) {
         bC.style.cursor = "ne-resize";
     } else {
         if (mouseState != "01") {
@@ -726,7 +733,6 @@ function doPagePositionByMouseCorRpg(ofsX, ofsY) {
         return;
       }
     }
-    bC.width = bC.width;  // **Trick to clear canvas.
     if (((!isValid[1]) && isValid[2] && isValid[3])) { // (!bottom) and left and right: cursor to beyond right-side
       tdeg = Math.atan((pe[1] - cp[1]) / (cp[0] - sX)) / 2;
       ts = (Math.sin(tdeg) * sA[0]) << 1;
@@ -737,7 +743,7 @@ function doPagePositionByMouseCorRpg(ofsX, ofsY) {
       doSP(ofsX, ofsY);
       return;
     }
-    
+    bC.width = bC.width;  // **Trick to clear canvas.
     ctx2.drawImage(allpi[riInd], sX, sY, sA[0], sA[1]);
     if (liInd != null) {
       ctx2.drawImage(allpi[liInd], sX-sA[0], sY, sA[0], sA[1]);
@@ -963,7 +969,6 @@ function doPagePositionByMouseCorLpg(ofsX, ofsY) {
         return;
       }
     }
-    bC.width = bC.width;  // **Trick to clear canvas.
     if (((!isValid[1]) && isValid[2] && isValid[3])) { // (!bottom) and left and right: cursor to beyond right-side
       tdeg = Math.atan((pe[1] - cp[1]) / (sX - cp[0])) / 2;
       ts = (Math.sin(tdeg) * sA[0]) << 1;
@@ -975,6 +980,7 @@ function doPagePositionByMouseCorLpg(ofsX, ofsY) {
       return;
     }
     
+    bC.width = bC.width;  // **Trick to clear canvas.
     if (riInd != null) {
       ctx2.drawImage(allpi[riInd], sX, sY, sA[0], sA[1]);
     }  
