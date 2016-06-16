@@ -630,10 +630,10 @@ function doPagePositionByMouseCorLpg(ofsX, ofsY) {
       ctx2.strokeStyle = tPbrdercolor;
       ctx2.stroke();
       ctx2.beginPath();
-      ctx2.moveTo(pe[0], pe[1]);
+      ctx2.moveTo(sX+sA[0], pe[1]);
       ctx2.lineTo(sX, pe[1]);
       ctx2.lineTo(sX, sY);
-      ctx2.lineTo(pe[0], sY);
+      ctx2.lineTo(sX+sA[0], sY);
       ctx2.closePath();
       ctx2.stroke();    
       doPaintShadow(ctx2, p1, [shaCfg.spw, sY], [shaCfg.spw, pe[1]], [sX, pe[1]]);
@@ -727,9 +727,11 @@ function doPagePositionByMouseCorLpg(ofsX, ofsY) {
             ctx2.strokeStyle = tPbrdercolor;
             ctx2.stroke();
 
-            ctx2.translate(sX + (pbOnTopX-pe[0]), sY);    
+            ctx2.translate(sX - (pbOnTopX-pe[0]), sY);    
             ctx2.rotate(degb / 2); // 2b degree   => **: rotate 銝滩�賢銁 translate 銋见�滚��
+            dOriPattern2(ctx2, "#0000ff");
             ctx2.translate(-sX, -sY);
+            dOriPattern2(ctx2, "#00ffff");
 
             l3 = ts;
             l5 = (l4 < 100) ? l4 : ((l4 / 2) > 50) ? 50 : (l4 / 2);
@@ -785,11 +787,12 @@ function doPagePositionByMouseCorLpg(ofsX, ofsY) {
             ctx2.stroke();
 
             ctx2.translate(sX, sY + dif2);
-            //dOriPattern(ctx2, "#ffff00");
+            //dOriPattern2(ctx2, "#ffff00");
             ctx2.rotate(-degb);
+            dOriPattern2(ctx2, "#0000ff");
             ctx2.translate(-sX, -sY);
 
-            //dOriPattern(ctx2, "#00ffff");
+            dOriPattern2(ctx2, "#00ffff");
             ctx2.translate(0, dif);
             l3 = Math.sqrt(Math.pow(l2, 2) + Math.pow(l1, 2)) - dif;
             l5 = (l4 < 100) ? l4 : ((l4 / 2) > 50) ? 50 : (l4 / 2);
