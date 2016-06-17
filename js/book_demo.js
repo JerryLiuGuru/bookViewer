@@ -7,6 +7,19 @@ var debugMode = false;
 var sX = -1, sY = -1;
 var sA = [];
 
+function handleResize2() {
+    var i, sw = window.screen.availWidth, sh = window.screen.availHeight;
+
+    for (i = 0; i < allpl.length; i++) {
+        if (allpl[i] != null) {
+            allpl[i].width = window.screen.availWidth; //rw-tbdrw2;    //NOTICE: Can't use .style.width = "xxx" + "px";
+            allpl[i].height = window.screen.availHeight; //rh-tbdrw2;   //Since it will remain the original size of inner image.                
+        }
+    }
+    //return [rw-tbdrw, rh-tbdrw, rw-tbdrw2, rh-tbdrw2];
+    return [500, 700, 500, 700];
+}
+
 function handleResize(img) {
     /*
         A3: 297 x 420mm => 0.707143 ( w/h : aspect ratio)
@@ -68,7 +81,7 @@ function showBookViewer() {
         sY = Math.floor(window.screen.availHeight / 2 - sA[1] / 2.1); //choose.offsetHeight + output.offsetHeight + 350;
         sX = Math.floor(window.screen.availWidth / 2 - sA[0] / 1.5);
     } else {
-        sY = Math.floor(window.screen.availHeight / 2 - sA[1] / 2.1); //choose.offsetHeight + output.offsetHeight + 350;
+        sY = Math.floor(window.screen.availHeight / 2 - sA[1] / 2.3); //choose.offsetHeight + output.offsetHeight + 350;
         sX = Math.floor(window.screen.availWidth / 2);
     }
 }
@@ -86,7 +99,7 @@ function onLoad() {
     i0.src = imgPath + "cover.jpg";
 
     i0.onload = function () {
-        sA = handleResize(i0);
+        sA = handleResize2();
         showBookViewer();
 
         shaCfg.spw = 50; //Math.floor(sA[0] * shaCfg.widPer);
@@ -116,21 +129,27 @@ function onLoad() {
       iLA[i] = -1;
     }
 
-    if (0) {
-        c1.src = imgPath + "1.jpg";
-        c1.onload = function () {
-            var ctx2 = nC.getContext('2d');
-            ctx2.drawImage(c1, sX, sY, sA[0], sA[1]);
-
-            p0.src = imgPath + "2.jpg";
-            p0.onload = function () {
-                var ctx2 = pl0.getContext('2d');
-                ctx2.drawImage(p0, sX, sY, sA[0], sA[1]);
-            }
-        }
-
-    }
+    getImgArray2();
 };
+
+function getImgArray2() {
+    var tnArray = ["cover.jpg", "1.jpg", "2.jpg", "3.jpg", "4.jpg", "5", "6", "7", "8", "9", "10",
+        "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", 
+        "26", "27", "28", "29", "30", "back"];
+    //debugger;
+
+    biA = tnArray;
+
+    imCnt = biA.length;
+    bcimg.src = imgPath + biA[0];
+    pgc.innerHTML = imCnt + " images.";
+    output.style["visibility"] = "visible";
+    
+    isImgArrayLoaded = true;
+    //debugger;
+    //var url1 = window.URL.createObjectURL(files[0]);               
+    //fp.innerHTML = "img/"; //url1.substring(0,url1.lastIndexOf("/"));    
+}
 
 function addOnLoad() {
     if (isImgArrayLoaded) {
@@ -335,11 +354,6 @@ function handleDragOver(evt) {
     evt.preventDefault();
     evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
 }
-
-// Setup the dnd listeners.
-var dropZone = document.getElementById('drop_zone');
-dropZone.addEventListener('dragover', handleDragOver, false);
-dropZone.addEventListener('drop', handleFileSelect, false); 
 
 // Book Logic=======================================================================================
 var choose = document.getElementById("choose"),
