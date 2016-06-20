@@ -14,7 +14,7 @@ function handleResize(img) {
         B4: 250 x 353mm => 0.708215
         B5: 176 x 250mm => 0.704
     */
-    var i, w = img.width, h = img.height, sw = window.screen.availWidth, sh = window.screen.availHeight;
+    var i, w = img.width, h = img.height, sw = window.innerWidth, sh = window.innerHeight;
     var wratio = (2 * w) / sw, hratio = h / sh, tw = null, th = null;
 
     if (wratio > bsRatio) {     // 因為 width 要用 2*w 估算，先以 width 評估起
@@ -47,12 +47,12 @@ function handleResize(img) {
     for (i = 0; i < allpl.length; i++) {
         if (allpl[i] != null) {
             if ((i <= 1) || (i >= (allpl.length - 2))) {
-                allpl[i].width = window.screen.availWidth; //rw-tbdrw;    //NOTICE: Can't use .style.width = "xxx" + "px";
-                allpl[i].height = window.screen.availHeight; //rh-tbdrw;   //Since it will remain the original size of inner image.                                
+                allpl[i].width = sw; //rw-tbdrw;    //NOTICE: Can't use .style.width = "xxx" + "px";
+                allpl[i].height = sh; //rh-tbdrw;   //Since it will remain the original size of inner image.                                
             } else {
                 //allpl[i].style="top: " + ((rh-rh2)/2) + "; left: " + ((rw-rw2)/2) 
-                allpl[i].width = window.screen.availWidth; //rw-tbdrw2;    //NOTICE: Can't use .style.width = "xxx" + "px";
-                allpl[i].height = window.screen.availHeight; //rh-tbdrw2;   //Since it will remain the original size of inner image.                
+                allpl[i].width = sw; //rw-tbdrw2;    //NOTICE: Can't use .style.width = "xxx" + "px";
+                allpl[i].height = sh; //rh-tbdrw2;   //Since it will remain the original size of inner image.                
             }
         }
     }
@@ -61,31 +61,71 @@ function handleResize(img) {
 }
 
 function showBookViewer() {
+    var sw = window.innerWidth, sh = window.innerHeight;
+    
     dZ = document.getElementById("dz_table");
     dZ.style["z-index"] = 2;
+    
 
     if (debugMode) {    // for debug;
-        sY = Math.floor(window.screen.availHeight / 2 - sA[1] / 2.1); //choose.offsetHeight + output.offsetHeight + 350;
-        sX = Math.floor(window.screen.availWidth / 2 - sA[0] / 1.5);
+        sY = Math.floor(sh / 2 - sA[1] / 2.1); //choose.offsetHeight + output.offsetHeight + 350;
+        sX = Math.floor(sw / 2 - sA[0] / 1.5);
     } else {
-        sY = Math.floor(window.screen.availHeight / 2 - sA[1] / 2.1); //choose.offsetHeight + output.offsetHeight + 350;
-        sX = Math.floor(window.screen.availWidth / 2);
+        sY = Math.floor(sh / 2 - sA[1] / 2.3); //choose.offsetHeight + output.offsetHeight + 350;
+        sX = Math.floor(sw / 2);
     }
 }
 
-function onLoad() {
-    //debugger
-    //input.value = dirpath;
-    //window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
-    //window.requestFileSystem(window.TEMPORARY, 1024*1024, onInitFs, errorHandler);
-    $("canvas").off("onmousedown");
-    $("canvas").off("onmousemove");
-    $("canvas").off("onmouseup");
-    $("img").off("onload");
-    
-    i0.src = imgPath + "cover.jpg";
+function onResize() {
+        oLfunc();
+        
+        allpl[0].width = allpl[0].width; 
+        var ctx2 = allpl[0].getContext('2d');
+        var pe = [sX+sA[0],sY+sA[1]];
+        var p1 = [sX, sY];
+        ctx2.drawImage(allpi[imInd%allpi.length], sX, sY, sA[0], sA[1]);
+        if (imInd>0) {
+            ctx2.drawImage(allpi[(imInd-1)%allpi.length], sX-sA[0], sY, sA[0], sA[1]);
+        }
+        if ( (imInd > 0) && (imInd < (imCnt-1)) ) {
+            ctx2.beginPath();
+            ctx2.moveTo(sX-sA[0], pe[1]);
+            ctx2.lineTo(sX, pe[1]);
+            ctx2.lineTo(sX, sY);
+            ctx2.lineTo(sX-sA[0], sY);
+            ctx2.closePath();
+            ctx2.strokeStyle = tPbrdercolor;
+            ctx2.stroke();
+            ctx2.beginPath();
+            ctx2.moveTo(pe[0], pe[1]);
+            ctx2.lineTo(sX, pe[1]);
+            ctx2.lineTo(sX, sY);
+            ctx2.lineTo(pe[0], sY);
+            ctx2.closePath();
+            ctx2.stroke();    
+            doPaintShadow(ctx2, p1, [shaCfg.spw, sY], [shaCfg.spw, pe[1]], [sX, pe[1]]);
+        }
+        if ( (imInd+1) < imCnt) {
+            var ctx2 = allpl[1].getContext('2d');
+            ctx2.drawImage(allpi[(imInd+1)%allpi.length], sX, sY, sA[0], sA[1]);
+        }        
+        if ( (imInd+2) < imCnt) {
+            var ctx2 = allpl[2].getContext('2d');
+            ctx2.drawImage(allpi[(imInd+2)%allpi.length], sX, sY, sA[0], sA[1]);
+        }        
+        handleRpgN2();
+}
 
-    i0.onload = function () {
+function Maximize() 
+{
+    window.innerWidth = screen.width;
+    window.innerHeight = screen.height;
+    window.screenX = 0;
+    window.screenY = 0;
+    alwaysLowered = false;
+}
+
+function oLfunc() {
         sA = handleResize(i0);
         showBookViewer();
 
@@ -98,10 +138,26 @@ function onLoad() {
         canPos.c_b = [sX, sY, sA[0], sA[1]];
         canPos.pgs = [sX + (sA[0] - sA[2]) / 2, sY + (sA[1] - sA[3]) / 2, sA[2], sA[3]];
 
+}
+
+function onLoad() {        
+    //debugger
+    //input.value = dirpath;
+    //window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
+    //window.requestFileSystem(window.TEMPORARY, 1024*1024, onInitFs, errorHandler);
+    $("canvas").off("onmousedown");
+    $("canvas").off("onmousemove");
+    $("canvas").off("onmouseup");
+    $("img").off("onload");
+    
+    i0.src = imgPath + "cover.jpg";
+
+    i0.onload = function () {
+        oLfunc();
         var ctx2 = allpl[0].getContext('2d');
         //ctx2.drawImage(c0, sX-shaCfg.spw, sY, sA[0]+shaCfg.spw, sA[1]);
         ctx2.drawImage(i0, sX, sY, sA[0], sA[1]);
-        //alert(sA[0] + "," + sA[1]);
+        //alert(sA[0] + "," + sA[1]);    
     }
 
     i0loadedti = setInterval(addOnLoad, 500);
@@ -384,6 +440,28 @@ var dX, dY;
 var lastImg = i5; 
 var tAsC = 10;
 
+function handleRpgN2() {
+    if (imInd <= (biA.length-3)) {
+        nniInd = ( (imInd+2) % allpi.length);
+        allpi[nniInd].src = imgPath + biA[imInd+2];
+        iLA[nniInd] = 1; //isLoadRpg
+    }
+    if (imInd <= (biA.length-2)) {
+        niInd = ( (imInd+1) % allpi.length);
+        allpi[niInd].src = imgPath + biA[imInd+1];  
+        iLA[niInd] = 1; //isLoadRpg
+    }
+    //isLoadRpg = true; isLoadLpg = false;
+    ctx = allpl[1].getContext('2d');
+    if ((imInd-2)>=0) {
+        ctx.drawImage(allpi[(imInd-2) % allpi.length], sX-sA[0], sY, sA[0], sA[1]); 
+    }
+    ctx2 = allpl[2].getContext('2d');
+    if ((imInd-3)>=0) {
+        ctx2.drawImage(allpi[(imInd-3) % allpi.length], sX-sA[0], sY, sA[0], sA[1]);  
+    }      
+}
+
 function doShowPageByInterval(curX, curY, tarX, tarY, timeItvl, shrinkDis, midX, midY) {
     // Animation Line: Y - dP[1] = (cy-dP[1])/(cx-dP[0]) * (X - dp[0]);
     // Do 4 steps to be on the dP. Every step take half way.
@@ -443,25 +521,8 @@ function doShowPageByInterval(curX, curY, tarX, tarY, timeItvl, shrinkDis, midX,
             ctx2.drawImage(allpi[(imInd+2) % allpi.length], sX, sY, sA[0], sA[1]);
         } else if ( isOnRpg_d && ((mouseState=="02")||((mouseState=="012")&&(isOnLpg_u))) ) {
             imInd += 2;
-            if (imInd <= (biA.length-3)) {
-              nniInd = ( (imInd+2) % allpi.length);
-              allpi[nniInd].src = imgPath + biA[imInd+2];
-              iLA[nniInd] = 1; //isLoadRpg
-            }
-            if (imInd <= (biA.length-2)) {
-              niInd = ( (imInd+1) % allpi.length);
-              allpi[niInd].src = imgPath + biA[imInd+1];  
-              iLA[niInd] = 1; //isLoadRpg
-            }
-            //isLoadRpg = true; isLoadLpg = false;
-            ctx = allpl[1].getContext('2d');
-            if ((imInd-2)>=0) {
-              ctx.drawImage(allpi[(imInd-2) % allpi.length], sX-sA[0], sY, sA[0], sA[1]); 
-            }
-            ctx2 = allpl[2].getContext('2d');
-            if ((imInd-3)>=0) {
-              ctx2.drawImage(allpi[(imInd-3) % allpi.length], sX-sA[0], sY, sA[0], sA[1]);  
-            }            
+            
+            handleRpgN2();      
         }
         console.log("end of action: imIaft="+imInd+",mS="+mouseState+",OLd="+isOnLpg_d+",ORd="+isOnRpg_d+",OLu="+isOnLpg_u+",ORu="+isOnRpg_u);
         isOnLpg_d = isOnLpg_u = isOnRpg_d = isOnRpg_u = mouseState = null;
