@@ -24,7 +24,11 @@ html {
 }
 
 body {
-	background: #ecf0f1;
+	/*background: #ecf0f1;*/
+	/*background: url("../img/book(切圖)-assets 2/底圖.jpg");*/
+	background-size: 100% 100%; 
+    /*background-size: 280px 160px;*/
+    background-repeat: no-repeat;
 	color: #34495e;
 	font-family: 'Lato', 'Arial', sans-serif;
 	font-weight: 400;
@@ -105,19 +109,59 @@ a {
 }
 
 .dropzone {
-	width: 300px;
-	margin-top: 10px;
-	display: block;
-	border: 2px dashed #bbb;
-    -moz-border-radius: 5px;
-    -webkit-border-radius: 5px;
-    border-radius: 5px;
-    padding: 25px;
-    text-align: center;
-    font: 20pt bold 'Vollkorn';
-    color: #bbb;
-	z-index: 99999;
+    background-repeat: no-repeat;
+	position: absolute;
+	top: 15px;
+	left: 20px;
+	padding: 0;
+	margin: 0;
+	/*border: 1px solid #2c3e50;*/
 }
+
+.dzImg {
+	position: relative;
+	display: block;
+	padding: 0;
+    margin: 0;
+}
+
+.cImg {
+	position: absolute;
+	display: block;
+	padding: 0;
+    margin: auto;
+}
+
+.rmenu,.rrmenu {
+	position: absolute;
+	padding: 0;
+    margin: 0;
+	top: 0;
+}
+
+.changetheme,.myfavorites {
+	border-radius: 15px;
+	position: absolute;
+	padding: 0;
+    margin: 0;
+}
+
+.cTInnerDiv,.mFInnerDiv {
+	position: absolute;
+	padding: 0;
+    margin: 0;
+	overflow: auto;
+	/*border: 1px solid #2c3e50;*/
+}
+
+.theme,.tag {
+	position: absolute;
+	padding: 0;
+	margin: 0;
+	border: 1px solid #2c3e50;
+}
+
+
 
 /* ///////////////////////////////////////////////////
 

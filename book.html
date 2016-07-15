@@ -1,20 +1,51 @@
 <!DOCTYPE html>
-<html lang="en">
+<html id="html" lang="en">
   <head>
     <title></title>
     <meta charset="UTF-8">    
     <link href="css/book.css" rel="stylesheet">
     
   </head>
-  <body id="body" onload="onLoad();">
+  <body id="body" onload="onLoad();" onresize="onResize(true);">
 
-    <table class="dZtable" id="dz_table">
+    <div class="dropzone" id="drop_zone" style="z-index:10;" onclick="alert('Drag & Drop Image Files Here');">
+      <img class="dzImg" id="dzImg" src="" />
+    </div>
+    <img class="cImg" id="center_img" src="" />
+    <img class="omImg" id="openmenu_Img" src="" onclick="openMenu();" style="z-index:10;"/>
+    <img class="ltImg" id="lefttag_Img" src="" onclick="doTag(true);" style="z-index:10; display:none;"/>
+    <img class="rtImg" id="righttag_Img" src="" onclick="doTag(false);" style="z-index:10; display:none;"/>
+    <div class="rmenu" id="rightMenu" style="display:none; z-index:10;">
+      <img class="fsImg" id="fullscreen_Img" src="" onclick="fullScreen();"/>
+      <img class="mfImg" id="myfavorite_Img" src="" onclick="myFavorites();"/>
+      <img class="ziImg" id="zoomin_Img" src="" onclick="doZoom(true, true);"/>
+      <img class="zoImg" id="zoomout_Img" src="" onclick="doZoom(false, true);"/>
+      <img class="others" id="others_Img" src="" onclick="othersMenu();"/>
+      <img class="cmImg" id="closemenu_Img" src="" onclick="closeMenu();"/>
+    </div>
+    <div class="myfavorites" id="myFavos" style="display:none; z-index:10;">
+      <img class="myfavorites" id="closemFDivImg" style="display:inherit; z-index:11;" onclick="myFavorites();">  
+      <div class="mFInnerDiv" id="mFInnerDiv" style="display:inherit; z-index:10;">
+      </div>
+    </div>    
+    <div class="rrmenu" id="rrightMenu" style="display:none; z-index:10;">
+      <img class="ctImg" id="changetheme_Img" src="" onclick="showThemes();"/>
+      <img class="prImg" id="print_Img" src="" onclick="printImg();"/>
+      <img class="shImg" id="share_Img" src="" onclick="shareWithFriends();"/>
+      <img class="csmImg" id="closesubmenu_Img" src="" onclick="closeSubMenu();"/>
+    </div>
+    <div class="changetheme" id="changeTheme" style="display:none; z-index:10;">
+      <img class="changetheme" id="closeThemeDivImg" style="display:inherit; z-index:11;" onclick="showThemes();">  
+      <div class="cTInnerDiv" id="cTInnerDiv" style="display:inherit; z-index:10;">
+      </div>
+    </div>
+    <!--<table class="dZtable" id="dz_table" style="margin: 0px; padding: 0px; z-index: -99;">
       <tr>
         <td width="30%">
         <!--<div id="choose" class="select">      
           Click the button to choose a folder of book images.
           <input type="file" id="fileURL" webkitdirectory mozdirectory msdirectory odirectory directory mdivtiple />  
-        </div>-->
+        </div>
         </td>
         <td width="20%">
           <div class="dropzone" id="drop_zone">Drop files here</div>
@@ -29,7 +60,7 @@
                   <img id="book_cover_img" src="" width="50px" height="50px" />
                 </td>
                 <td>
-                  <!--<p>Folder path: <label id="folder_path">NA</label>-->
+                  <!--<p>Folder path: <label id="folder_path">NA</label>
                   <p>Page count:  <label id="page_count">NA</label>            
                 </td>
               </tr>
@@ -40,7 +71,7 @@
           <div id="imInd">imInd: </div>
         </td>
       </tr>
-    </table>
+    </table>-->
     <p></p>
     
     <img id="i0"  style="display:none;">
@@ -50,7 +81,7 @@
     <img id="i4"  style="display:none;">
     <img id="i5"  style="display:none;">
 
-    <canvas id="bC" width="100%" height="100%" style="position:absolute; top: 0px; left: 0px; margin: 0px; padding: 0px; z-index: 0;">        
+    <canvas id="bC" width="100%" height="100%" style="position:absolute; top: 0px; left: 0px; margin: 0px; padding: 0px; z-index: 1;">        
     </canvas>
     <canvas id="nC" width="100%" height="100%" style="position:absolute; top: 0px; left: 0px; margin: 0px; padding: 0px; z-index: -1; display: none;">
     </canvas>
@@ -60,7 +91,8 @@
     <script src="js/jquery.min.js"></script>
     <script src="js/filesystemapi.js"></script>
     <script src="js/UI.js"></script>
-    <script src="js/b_cc.js"></script>
+    <script src="js/book.js"></script>
+    <!--<script src="js/b_cc.js"></script>-->
   </body>
 </html>
 

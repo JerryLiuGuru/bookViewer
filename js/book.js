@@ -1,11 +1,13 @@
 
 // UI Logic========================================================================================
 var imgPath = "./img/";
+var layoutIndex = 0;
 var biA = [], tnArray = [], iLA = [];
 var isImgArrayLoaded = false, i0loadedti = null;
 var debugMode = false;
 var sX = -1, sY = -1;
 var sA = [];
+var zoomShft = 10;
 
 function handleResize(img) {
     /*
@@ -14,7 +16,8 @@ function handleResize(img) {
         B4: 250 x 353mm => 0.708215
         B5: 176 x 250mm => 0.704
     */
-    var i, w = img.width, h = img.height, sw = window.screen.availWidth, sh = window.screen.availHeight;
+    //var i, w = img.width, h = img.height, sw = window.screen.availWidth, sh = window.screen.availHeight;
+    var i, w = img.width, h = img.height, sw = window.innerWidth, sh = window.innerHeight;
     var wratio = (2 * w) / sw, hratio = h / sh, tw = null, th = null;
 
     if (wratio > bsRatio) {     // 因為 width 要用 2*w 估算，先以 width 評估起
@@ -47,12 +50,12 @@ function handleResize(img) {
     for (i = 0; i < allpl.length; i++) {
         if (allpl[i] != null) {
             if ((i <= 1) || (i >= (allpl.length - 2))) {
-                allpl[i].width = window.screen.availWidth; //rw-tbdrw;    //NOTICE: Can't use .style.width = "xxx" + "px";
-                allpl[i].height = window.screen.availHeight; //rh-tbdrw;   //Since it will remain the original size of inner image.                                
+                allpl[i].width = sw; //rw-tbdrw;    //NOTICE: Can't use .style.width = "xxx" + "px";
+                allpl[i].height = sh; //rh-tbdrw;   //Since it will remain the original size of inner image.                                
             } else {
                 //allpl[i].style="top: " + ((rh-rh2)/2) + "; left: " + ((rw-rw2)/2) 
-                allpl[i].width = window.screen.availWidth; //rw-tbdrw2;    //NOTICE: Can't use .style.width = "xxx" + "px";
-                allpl[i].height = window.screen.availHeight; //rh-tbdrw2;   //Since it will remain the original size of inner image.                
+                allpl[i].width = sw; //rw-tbdrw2;    //NOTICE: Can't use .style.width = "xxx" + "px";
+                allpl[i].height = sh; //rh-tbdrw2;   //Since it will remain the original size of inner image.                
             }
         }
     }
@@ -60,33 +63,832 @@ function handleResize(img) {
     return [rw2, rh2, rw2, rh2];
 }
 
-function showBookViewer() {
-    dZ = document.getElementById("dz_table");
-    dZ.style["z-index"] = 2;
+var layoutDB = [
+    {   
+        dz_pos: [20,15],    // position for drop zone
+        //path: "./img/book(切圖)-assets 2/",   // path for imgs
+        path: "./img/網頁(典藏)1280_800-切圖/",   // path for imgs
+        bgImg: "背景.jpg",    // bg img
+        bgimg_s: [1280,800],       
+        //dzbgImg: "icon_file橢圓.png", // drop zone bg img
+        dzbgImg: "file_橢圓.png", // drop zone bg img
+        dzbi_s: [52,52],    // drop zone bg img size        
+        dzimg_s: [31,30],   // drop zone center img size
+        cImgName: "logo_Gununets.png",  // center img to show logo.
+        cImg_s: [266,81],    // center img size
+        stbgImg: "浮動視窗.png",    // bg img for the area to show tags.
+        stbgImg_s: [1111,588],
+        clzTagDivImg: "icon_close.png",
+        clzTagDivImg_s: [19,19],
+        tagDelImg: "icon_delete.png",
+        tagDelImg_s: [20,26],
+        ImgName: [ "icon_arrow_open.png", "icon_arrow_close.png", "icon_windows.png", "icon_tag.png", "icon_zoom in.png", 
+                    "icon_-.png", "icon_menu.png", "icon_tag_L.png", "icon_tag_R.png"],
+        Img_s: [ [12,28], [15,28], [24,22], [23,26], [25,24], 
+                 [25,25], [25,25], [28,37], [28,37] ],
+        Img_t: [ "Open Right Menu", "Close Menu", "Full Screen", "My Favorites", "Zoom In", 
+                    "Zoom Out", "Other Functions", "Add Left Page to My Favorites", "Add Right Page to My Favorites" ],
+        iconTop: 20,    // top value of 1st icon
+        iconYshft: 20,  // y shft value for icons
+        rMenuBgcolor: "#6a3906",    // right menu bg color
+        tagXshft: 3,
+        tagYshft: 3,
+    },
+    {
+        dz_pos: [20,15],    // position for drop zone
+        path: "./img/book(切圖)-assets 2/",   // path for imgs 
+        bgImg: "底圖.jpg",    // bg img
+        bgimg_s: [1280,800],       
+        dzbgImg: "icon_file橢圓.png", // drop zone bg img
+        dzbi_s: [52,52],    // drop zone bg img size        
+        dzimg_s: [31,30],   // drop zone center img size
+        cImgName: "logo_Gurunets.png",  // center img to show logo.
+        cImg_s: [437,125],    // center img size
+        stbgImg: "浮動視窗.jpg",    // bg img for the area to show tags.
+        stbgImg_s: [1121,598],
+        clzTagDivImg: "icon_close.png",
+        clzTagDivImg_s: [19,19],
+        tagDelImg: "icon_delete.png",
+        tagDelImg_s: [26,32],        
+        ImgName: [ "icon_arrow_open.png", "icon_arrow_close.png", "icon_windows.png", "icon_tag.png", "icon_zoom-in.png", 
+                    "icon_zoom-out.png", "icon_menu.png", "icon_tag_L.png", "icon_tag_R.png"],
+        Img_s: [ [12,28], [15,28], [24,22], [23,26], [25,24], 
+                 [25,25], [25,25], [28,37], [28,37] ],
+        Img_t: [ "Open Right Menu", "Close Menu", "Full Screen", "My Favorites", "Zoom In", 
+                    "Zoom Out", "Other Functions", "Add Left Page to My Favorites", "Add Right Page to My Favorites" ],
+        iconTop: 20,    // top value of 1st icon
+        iconYshft: 20,  // y shft value for icons
+        rMenuBgcolor: "#6a3906",    // right menu bg color
+        tagXshft: 3,
+        tagYshft: 3,
+    },
+    {
+        dz_pos: [20,15],    // position for drop zone
+        path: "./img/網頁(簡約綠)-1280_800切圖/",   // path for imgs 
+        bgImg: "white",    // bg img: 
+        bgimg_s: [1280,800],       
+        dzbgImg: "file_橢圓.png", // drop zone bg img
+        dzbi_s: [52,52],    // drop zone bg img size        
+        dzimg_s: [31,30],   // drop zone center img size
+        cImgName: "logo_green.jpg",  // center img to show logo.
+        cImg_s: [259,73],    // center img size
+        stbgImg: "浮動視窗.png",    // bg img for the area to show tags.
+        stbgImg_s: [1121,598],
+        clzTagDivImg: "icon_close.png",
+        clzTagDivImg_s: [19,19],
+        tagDelImg: "icon_delete.png",
+        tagDelImg_s: [26,32],                  
+        ImgName: [ "icon_arrow_open.png", "icon_arrow_close.png", "icon_windows.png", "icon_tag.png", "icon_zoom in.png", 
+                    "icon_-.png", "icon_menu.png", "icon_tag_L.png", "icon_tag_R.png"],
+        Img_s: [ [12,28], [15,28], [24,22], [23,26], [25,24], 
+                 [25,25], [25,25], [28,37], [28,37] ],
+        Img_t: [ "Open Right Menu", "Close Menu", "Full Screen", "My Favorites", "Zoom In", 
+                    "Zoom Out", "Other Functions", "Add Left Page to My Favorites", "Add Right Page to My Favorites" ],
+        iconTop: 20,    // top value of 1st icon
+        iconYshft: 20,  // y shft value for icons
+        rMenuBgcolor: "#b7db3a",    // right menu bg color
+        tagXshft: 3,
+        tagYshft: 3,
+    },
+    {
+        dz_pos: [20,15],    // position for drop zone
+        path: "./img/其他樣板背景/",   // path for imgs 
+        bgImg: "科技黑/背景黑.jpg",    // bg img: 
+        bgimg_s: [1280,800],       
+        dzbgImg: "科技黑/icon_file橢圓_科技黑用.png", // drop zone bg img
+        dzbi_s: [52,52],    // drop zone bg img size        
+        dzimg_s: [31,30],   // drop zone center img size
+        cImgName: "科技黑/logo-科技黑.png",  // center img to show logo.
+        cImg_s: [454,144],    // center img size
+        stbgImg: "浮動視窗.png",    // bg img for the area to show tags.
+        stbgImg_s: [1121,598],
+        clzTagDivImg: "icon_close.png",
+        clzTagDivImg_s: [19,19],
+        tagDelImg: "icon_delete.png",
+        tagDelImg_s: [26,32],                  
+        ImgName: [ "icon_arrow_open.png", "icon_arrow_close.png", "icon_windows.png", "icon_tag.png", "icon_zoom in.png", 
+                    "icon_-.png", "icon_menu.png", "icon_tag_L.png", "icon_tag_R.png"],
+        Img_s: [ [12,28], [15,28], [24,22], [23,26], [25,24], 
+                 [25,25], [25,25], [28,37], [28,37] ],
+        Img_t: [ "Open Right Menu", "Close Menu", "Full Screen", "My Favorites", "Zoom In", 
+                    "Zoom Out", "Other Functions", "Add Left Page to My Favorites", "Add Right Page to My Favorites" ],
+        iconTop: 20,    // top value of 1st icon
+        iconYshft: 20,  // y shft value for icons
+        rMenuBgcolor: "#55c1ea",    // right menu bg color
+        tagXshft: 3,
+        tagYshft: 3,
+    },
+    {
+        dz_pos: [20,15],    // position for drop zone
+        path: "./img/其他樣板背景/",   // path for imgs 
+        bgImg: "童話紫/背景_紫.jpg",    // bg img: 
+        bgimg_s: [1280,800],       
+        dzbgImg: "童話紫/file_橢圓.png", // drop zone bg img
+        dzbi_s: [52,52],    // drop zone bg img size        
+        dzimg_s: [31,30],   // drop zone center img size
+        cImgName: "童話紫/logo_紫.png",  // center img to show logo.
+        cImg_s: [454,144],    // center img size
+        stbgImg: "浮動視窗.png",    // bg img for the area to show tags.
+        stbgImg_s: [1121,598],
+        clzTagDivImg: "icon_close.png",
+        clzTagDivImg_s: [19,19],
+        tagDelImg: "icon_delete.png",
+        tagDelImg_s: [26,32],                  
+        ImgName: [ "icon_arrow_open.png", "icon_arrow_close.png", "icon_windows.png", "icon_tag.png", "icon_zoom in.png", 
+                    "icon_-.png", "icon_menu.png", "icon_tag_L.png", "icon_tag_R.png"],
+        Img_s: [ [12,28], [15,28], [24,22], [23,26], [25,24], 
+                 [25,25], [25,25], [28,37], [28,37] ],
+        Img_t: [ "Open Right Menu", "Close Menu", "Full Screen", "My Favorites", "Zoom In", 
+                    "Zoom Out", "Other Functions", "Add Left Page to My Favorites", "Add Right Page to My Favorites" ],
+        iconTop: 20,    // top value of 1st icon
+        iconYshft: 20,  // y shft value for icons
+        rMenuBgcolor: "#662986",    // right menu bg color
+        tagXshft: 3,
+        tagYshft: 3,
+    },
+    {
+        dz_pos: [20,15],    // position for drop zone
+        path: "./img/其他樣板背景/",   // path for imgs 
+        bgImg: "天空藍/背景_天空藍.jpg",    // bg img: 
+        bgimg_s: [1280,800],       
+        dzbgImg: "天空藍/file_橢圓.png", // drop zone bg img
+        dzbi_s: [52,52],    // drop zone bg img size        
+        dzimg_s: [31,30],   // drop zone center img size
+        cImgName: "天空藍/logo_天空藍.png",  // center img to show logo.
+        cImg_s: [454,144],    // center img size
+        stbgImg: "浮動視窗.png",    // bg img for the area to show tags.
+        stbgImg_s: [1121,598],
+        clzTagDivImg: "icon_close.png",
+        clzTagDivImg_s: [19,19],
+        tagDelImg: "icon_delete.png",
+        tagDelImg_s: [26,32],                  
+        ImgName: [ "icon_arrow_open.png", "icon_arrow_close.png", "icon_windows.png", "icon_tag.png", "icon_zoom in.png", 
+                    "icon_-.png", "icon_menu.png", "icon_tag_L.png", "icon_tag_R.png"],
+        Img_s: [ [12,28], [15,28], [24,22], [23,26], [25,24], 
+                 [25,25], [25,25], [28,37], [28,37] ],
+        Img_t: [ "Open Right Menu", "Close Menu", "Full Screen", "My Favorites", "Zoom In", 
+                    "Zoom Out", "Other Functions", "Add Left Page to My Favorites", "Add Right Page to My Favorites" ],
+        iconTop: 20,    // top value of 1st icon
+        iconYshft: 20,  // y shft value for icons
+        rMenuBgcolor: "#3052f1",    // right menu bg color
+        tagXshft: 3,
+        tagYshft: 3,
+    },
+    {
+        dz_pos: [20,15],    // position for drop zone
+        path: "./img/其他樣板背景/",   // path for imgs 
+        bgImg: "變形蟲/背景_變形蟲.jpg",    // bg img: 
+        bgimg_s: [1280,800],       
+        dzbgImg: "變形蟲/file_橢圓.png", // drop zone bg img
+        dzbi_s: [52,52],    // drop zone bg img size        
+        dzimg_s: [31,30],   // drop zone center img size
+        cImgName: "變形蟲/logo_變形蟲.png",  // center img to show logo.
+        cImg_s: [454,144],    // center img size
+        stbgImg: "浮動視窗.png",    // bg img for the area to show tags.
+        stbgImg_s: [1121,598],
+        clzTagDivImg: "icon_close.png",
+        clzTagDivImg_s: [19,19],
+        tagDelImg: "icon_delete.png",
+        tagDelImg_s: [26,32],                  
+        ImgName: [ "icon_arrow_open.png", "icon_arrow_close.png", "icon_windows.png", "icon_tag.png", "icon_zoom in.png", 
+                    "icon_-.png", "icon_menu.png", "icon_tag_L.png", "icon_tag_R.png"],
+        Img_s: [ [12,28], [15,28], [24,22], [23,26], [25,24], 
+                 [25,25], [25,25], [28,37], [28,37] ],
+        Img_t: [ "Open Right Menu", "Close Menu", "Full Screen", "My Favorites", "Zoom In", 
+                    "Zoom Out", "Other Functions", "Add Left Page to My Favorites", "Add Right Page to My Favorites" ],
+        iconTop: 20,    // top value of 1st icon
+        iconYshft: 20,  // y shft value for icons
+        rMenuBgcolor: "#6a3e38",    // right menu bg color
+        tagXshft: 3,
+        tagYshft: 3,
+    }
+];
+var sublayoutDB = [
+    {
+        path: "./img/book(切圖)-assets 2/menu-for介面切換用/",
+        ImgName: [ "icon_exchange.png", "icon_print.png", "icon_share.png", "icon_arrow_close.png" ],
+        Img_s: [ [28,25], [28,31], [28,21], [23,44] ],
+        Img_t: [ "Change Theme", "Print a Page", "Share with Your Friends", "Close Menu" ],
+        clzThemeDivImg: "icon_close.png",
+        clzThemeDivImg_s: [28,28],
+        chThemeBgImg: "浮動視窗-介面切換.jpg",
+        chThemeBgImg_s: [428,598],
+        chThemeChImg: "icon_check.png",
+        chThemeChImg_s: [23,23],
+        chThemeSeImg: "icon_check-ok.png",    //change theme close icon
+        chThemeSeImg_s: [23,23],
+        themeTop: 10,
+        themeYshft: 3,    
+    }
+];
 
-    if (debugMode) {    // for debug;
-        sY = Math.floor(window.screen.availHeight / 2 - sA[1] / 2.1); //choose.offsetHeight + output.offsetHeight + 350;
-        sX = Math.floor(window.screen.availWidth / 2 - sA[0] / 1.5);
+var rrmenu = document.getElementById("rrightMenu");
+var ctImg = document.getElementById("changetheme_Img");
+var prImg = document.getElementById("print_Img");
+var shImg = document.getElementById("share_Img");
+var csmImg = document.getElementById("closesubmenu_Img");
+var allsubicons = [ctImg, prImg, shImg, csmImg];   //Must correspond to ImgName
+function doSubLayout() {
+    var imset0 = layoutDB[layoutIndex];
+    var imset1 = sublayoutDB[layoutIndex];
+    var impath = imset1.path;
+    
+    rrmenu.style.backgroundColor = imset0.rMenuBgcolor;
+    rrmenu.style.width = rmenu.style.width;
+    rrmenu.style.height = rmenu.style.height;
+    rrmenu.style.left = rmenu.style.left;
+
+    for (i=0; i<allsubicons.length; i++) {
+        var te = allsubicons[i];
+        if (i==(allsubicons.length-1)) {
+            te.src = imset0.path + imset0.ImgName[1];
+        } else {
+            te.src = impath + imset1.ImgName[i];
+            te.width = imset1.Img_s[i][0];
+            te.height = imset1.Img_s[i][1];
+        }        
+        te.title = imset1.Img_t[i];
+        te.alt = imset1.Img_t[i];
+    }
+
+    var chkAllIconsLoaded2 = function() {
+        console.log("Enter doSubLayout");
+        var flag = true;
+        for (i = 0; i < allsubicons.length; i++) {
+            if (allsubicons[i].width == 0) {
+                flag = false;
+                break;
+            }
+        }
+        if (flag) {
+            setPosition2();
+            rmenu.style.display = "none";
+            rrmenu.style.display = "block";
+        } else {
+            cimgts2 = setTimeout(chkAllIconsLoaded2, 100);        
+        }
+    }   
+    cimgts2 = setTimeout(chkAllIconsLoaded2, 100);    
+}
+var ctdiv = document.getElementById("changeTheme");
+function createInnerHTMLofShowTheme() {
+    var imset1 = sublayoutDB[layoutIndex];
+    var impath = imset1.path;
+    var ctw = (imset1.chThemeBgImg_s[0]), cth = (imset1.chThemeBgImg_s[1]);
+    ctdiv.style.backgroundImage = "url('"+impath + imset1.chThemeBgImg +"')";
+    ctdiv.style.backgroundSize = ctw+"px "+cth+"px";
+    ctdiv.style.width = ctw+"px";
+    ctdiv.style.height = cth+"px";
+    var rml = rmenu.style.left;
+    ctdiv.style.left = (parseInt(rml.substring(0,rml.length-2)) - ctw - 50)+"px";
+    ctdiv.style.top = ((window.innerHeight - cth)/2)+"px";
+    
+    var ctDivImg = document.getElementById("closeThemeDivImg");
+    ctDivImg.src = impath + imset1.clzThemeDivImg;
+    ctDivImg.style.left = "12px";
+    ctDivImg.style.top = "10px";
+    var ctindiv = document.getElementById("cTInnerDiv"), ctiw = (ctw-40), ctih = (cth-20);
+    ctindiv.style.width = ctiw+"px";
+    ctindiv.style.height = ctih+"px";
+    ctindiv.style.left = "15px";
+    ctindiv.style.top = "10px";
+
+    var ihtml = "", topv = 0, leftv = 0, yshft = imset1.themeYshft, tDB, tDB2;
+    var th = Math.floor(ctih/3), tw = 0;
+    for (i=0; i<layoutDB.length; i++) {
+        tDB = layoutDB[i];
+        tDB2 = sublayoutDB[i];
+        whf = tDB.bgimg_s[0]/tDB.bgimg_s[1]; 
+        tw = Math.floor(th*whf);
+        leftv = Math.floor((ctiw-tw)/2);
+        ihtml += "<div class='theme' id='theme"+i+"' style=\"position:absolute; width:"+tw+"px; height:"+th+"px; "+
+                 "top:"+topv+"px; left:"+leftv+"px;";
+        if (tDB.bgImg.indexOf(".")!=-1) {
+            ihtml += "\">  <img id='theme"+i+"_img1' src='"+tDB.path+tDB.bgImg+"' style='position:absolute; top:0px; left:0px; z-index: 11;' width='"+(tw-2)+"px' height='"+(th-2)+"px' >";        
+        } else {
+            ihtml += " background-color: "+tDB.bgImg+";\">";
+        }
+        ssize=(th/tDB.bgimg_s[1]);
+        ciw = tDB.cImg_s[0]*ssize;
+        cih = tDB.cImg_s[1]*ssize;
+        ihtml += "  <img id='theme"+i+"_img3' src='"+tDB.path+tDB.cImgName+"' style='position:absolute; top:"+
+                    ((th-cih)/2)+"px; left:"+((tw-ciw)/2)+"px; width:"+ciw+"px; height:"+cih+"px; z-index: 12;'>";
+        var iw = tDB2.chThemeSeImg_s[0], ih = tDB2.chThemeSeImg_s[1];
+        if (i==layoutIndex) {
+            ihtml += "  <img id='theme"+i+"_img2' src='"+tDB2.path+tDB2.chThemeSeImg+"' style='position:absolute; top:"+
+                    (th-ih-5)+"px; left:"+(tw-iw-5)+"px; width:"+iw+"px; height:"+ih+"px; z-index: 12;'>";
+        } else {
+            ihtml += "  <img id='theme"+i+"_img2' src='"+tDB2.path+tDB2.chThemeChImg+"' style='position:absolute; top:"+
+                    (th-ih-5)+"px; left:"+(tw-iw-5)+"px; width:"+iw+"px; height:"+ih+"px; z-index: 12;' onclick='changeTheme(this,"+i+");'>";
+        }
+        ihtml += "</div>"; 
+        topv += (th+yshft);
+    }
+    ctindiv.innerHTML = ihtml;
+}
+function changeTheme(imgele, theme_index) {
+    layoutIndex = theme_index;
+    createInnerHTMLofShowTheme();
+    onResize(false);
+}
+function setPosition2() {
+    var sw = window.innerWidth, sh = window.innerHeight;
+    var imset0 = layoutDB[layoutIndex];
+    var imset = sublayoutDB[layoutIndex];
+    for (i = 0; i < allsubicons.length; i++) {
+        var se = allsubicons[i], ti, ts, th;
+        ts = rrmenu.style.width;
+        tw = parseInt(ts.substring(0,ts.length-2));
+        se.style.position = "absolute";
+        if (se.className=="ctImg") {
+            se.style.top = (imset0.iconTop)+"px";
+            se.style.left = ((tw-se.width)/2)+"px"; 
+        } else if (se.className=="csmImg") {
+            se.style.top = (sh-se.height-10)+"px";
+            se.style.left = "5px";
+        } else {
+            ti = allsubicons[i-1];
+            ts = ti.style.top;
+            th = parseInt(ts.substring(0,ts.length-2))+ti.height;
+            se.style.top = Math.ceil(th+imset0.iconYshft)+"px";
+            if (se.className=="prImg") {
+                se.style.left = ((tw-se.width)/2)+"px";
+            } else if (se.className=="shImg") {
+                se.style.left = ((tw-se.width)/2-2)+"px";
+            }        
+        }
+    }
+}
+function showThemes() {
+    if (ctdiv.style.display != "none") {
+        ctdiv.style.display = "none";
     } else {
-        sY = Math.floor(window.screen.availHeight / 2 - sA[1] / 2.1); //choose.offsetHeight + output.offsetHeight + 350;
-        sX = Math.floor(window.screen.availWidth / 2);
+        var imset = sublayoutDB[layoutIndex];
+        createInnerHTMLofShowTheme();
+        ctdiv.style.display = "block";
+    }
+}
+function printImg() {
+    window.print();
+    //alert("Print a Page or two Pages at the same time.");
+}
+function shareWithFriends() {
+    alert("[Customized Function] Share with Friends.");
+}
+function closeSubMenu() {
+    rmenu.style.display = "block";
+    rrmenu.style.display = "none";    
+}
+
+var body = document.getElementById("body");
+var bIpath = null;
+var dz = document.getElementById("drop_zone");
+var cImg = document.getElementById("center_img");
+var rmenu = document.getElementById("rightMenu");
+var fsImg = document.getElementById("fullscreen_Img");
+var mfImg = document.getElementById("myfavorite_Img");
+var ziImg = document.getElementById("zoomin_Img"); 
+var zoImg = document.getElementById("zoomout_Img");
+var otImg = document.getElementById("others_Img");
+var cmImg = document.getElementById("closemenu_Img");
+var omImg = document.getElementById("openmenu_Img");
+var ltImg = document.getElementById("lefttag_Img");
+var rtImg = document.getElementById("righttag_Img");
+var allicons = [omImg, cmImg, fsImg, mfImg, ziImg, zoImg, otImg, ltImg, rtImg];   //Must correspond to ImgName
+var cimgts, cimgts2, isSafe2zoom;
+function doLayout(sw,sh) {
+    var imset = layoutDB[layoutIndex];
+    var impath = imset.path;        
+    bIpath = impath + imset.bgImg;
+    //body.background = "url('"+bIpath+"');";
+    body.background = bIpath;
+    /*var tsw=sw, tsh=sh;
+    if ( (sw < imset.bgimg_s[0])||(sh < imset.bgimg_s[1]) ) {
+        var wf = (sw/imset.bgimg_s[0]), hf = (sh/imset.bgimg_s[1]);
+        if (wf < hf) {  // 以 w 為主，因為 width 更小
+            tsw = sw;
+            tsh = wf*imset.bgimg_s[1];
+        } else {
+            tsh = sh;
+            tsw = hf*imset.bgimg_s[0];
+        }
+    }
+    tsw = 100; tsh = 62.5;*/
+    //body.backgroundSize = tsw+"px "+tsh+"px";
+    //body.backgroundSize = "1280px 800px";
+    //console.log("body.backgroundSize: "+tsw+","+tsh);
+    
+    dz.style.backgroundImage = "url('"+ impath + imset.dzbgImg +"')";
+    dz.style.backgroundSize = imset.dzbi_s[0]+"px "+imset.dzbi_s[1]+"px";
+    dz.style.width = imset.dzbi_s[0]+"px";
+    dz.style.height = imset.dzbi_s[1]+"px";
+    dz.style.left = imset.dz_pos[0]+"px";
+    dz.style.top = imset.dz_pos[1]+"px";
+
+    var dzImg = document.getElementById("dzImg");
+    dzImg.src = impath + "icon_file.png";
+    dzImg.width = imset.dzimg_s[0];
+    dzImg.height = imset.dzimg_s[1];
+    dzImg.onload = function(e) {
+        dzImg = e.srcElement;
+        var dz = dzImg.parentElement;
+        dzImg.style.top = ((parseInt(dz.style.height.substring(0,2)) - dzImg.height)/2)+"px";
+        dzImg.style.left = (parseInt(dz.style.height.substring(0,2))/2 - dzImg.height/1.5)+"px";
+    };
+    dz.alt = dz.title = dzImg.alt = dzImg.title = "Drag & Drop Image Files Here";
+
+    cImg.src = impath + imset.cImgName;
+    cImg.onload = function(e) {
+        cImg = e.srcElement;
+        cImg.style.left = ((sw-cImg.width)/2)+"px";
+        cImg.style.top = ((sh-cImg.height)/2)+"px";
+        //console.log("cImg.style.left="+cImg.style.left);
+    }
+    var mw = (parseInt(imset.Img_s[imset.Img_s.length-1][0])+5);
+    
+    rmenu.style.backgroundColor = imset.rMenuBgcolor;
+    rmenu.style.width = (mw+"px");
+    rmenu.style.height = (sh+"px");
+    rmenu.style.left = (sw-mw)+"px";
+
+    for (i=0; i<allicons.length; i++) {
+        var te = allicons[i];
+        te.src = impath + imset.ImgName[i];
+        te.width = imset.Img_s[i][0];
+        te.height = imset.Img_s[i][1];
+        te.title = imset.Img_t[i];
+        te.alt = imset.Img_t[i];
+    }
+
+    var chkAllIconsLoaded = function() {
+        console.log("Enter doLayout");
+        var flag = true;
+        for (i = 0; i < allicons.length; i++) {
+            if (allicons[i].width == 0) {
+                flag = false;
+                break;
+            }
+        }
+        if (flag) {
+            console.log("chkAllIconsLoaded: "+cimgts);
+            setPosition(sw,sh);
+            isSafe2zoom = true;
+        } else {
+            setTimeout(chkAllIconsLoaded, 100);
+        }
+    }
+    isSafe2zoom = false;   
+    cimgts = setTimeout(chkAllIconsLoaded, 100);
+}
+var mfdiv = document.getElementById("myFavos");
+function createInnerHTMLofShowTags() {
+    var imset1 = layoutDB[layoutIndex];
+    var impath = imset1.path;
+    var ctw = (imset1.stbgImg_s[0]), cth = (imset1.stbgImg_s[1]);
+    mfdiv.style.backgroundImage = "url('"+ impath + imset1.stbgImg +"')";
+    mfdiv.style.backgroundSize = ctw+"px "+cth+"px";
+    mfdiv.style.width = ctw+"px";
+    mfdiv.style.height = cth+"px";
+    mfdiv.style.left = ((window.innerWidth - ctw)/2)+"px";
+    mfdiv.style.top = ((window.innerHeight - cth)/2)+"px";
+    
+    var mfdivImg = document.getElementById("closemFDivImg");
+    mfdivImg.src = impath + imset1.clzTagDivImg;
+    mfdivImg.style.left = "12px";
+    mfdivImg.style.top = "10px";
+    var mfindiv = document.getElementById("mFInnerDiv"), ctiw = (ctw-200), ctih = (cth-30);
+    var xshft = imset1.tagXshft, yshft = imset1.tagYshft;
+    mfindiv.style.width = ctiw+"px";
+    mfindiv.style.height = ctih+"px";
+    mfindiv.style.left = ((ctw-ctiw)/2)+"px";
+    mfindiv.style.top = ((cth-ctih)/2)+"px";
+
+    var ihtml = "", topv = 0, leftv = 0;
+    var th = Math.floor(ctih/2-2), tw = Math.floor(sA[0]*(th/sA[1]));
+	var tdw = imset1.tagDelImg_s[0], tdh = imset1.tagDelImg_s[1];
+
+    for (i=0; i<myFavArray.length; i++) {
+        ihtml += "<div class='tag' id='tag"+i+"' style=\"position:absolute; width:"+tw+"px; height:"+th+"px; "+
+                 "top:"+topv+"px; left:"+leftv+"px;\">";
+        ihtml += "  <img id='tag"+i+"_img1' src='"+imgPath+biA[myFavArray[i]]+"' style='position:absolute; top:0px; left:0px; z-index: 11;'"+ 
+                 "width='"+(tw-2)+"px' height='"+(th-2)+"px' >";
+        ihtml += "  <img id='tag"+i+"_img2' src='"+impath+imset1.tagDelImg+"' style='position:absolute; top:"+(th-tdh-5)+"px; left:"+(tw-tdw-5)+
+                 "px; z-index: 11;' width='"+(tdw)+"px' height='"+(tdh)+"px' onclick='delTag(this);'>";
+        ihtml += "</div>"; 
+        leftv += (tw+xshft);
+        if (leftv > (ctiw-tw)) {
+            leftv = 0;
+            topv += (th + yshft);
+        }
+    }
+    mfindiv.innerHTML = ihtml;
+}
+
+function delTag(sE) {
+    var id = sE.id, tind = parseInt(id.substring(3,10));
+    myFavArray.splice(tind, 1);    //index, howmany, item1, item2, ..... => index & howmany: delete howmany items from index; itemX: items to add.
+    createInnerHTMLofShowTags();
+}
+
+var myFavArray = [];
+function doTag(isLeft) {
+    var tagimInd = imInd;
+    if (isLeft) {
+        if (tagimInd > 0) {
+            tagimInd--;
+        } else {
+            return;
+        }
+    }
+    var bingo=false;
+    for (i=0; i<myFavArray.length; i++) {
+        if (myFavArray[i]==tagimInd) {
+            bingo=true;
+            alert("This page was already added before.")
+            break;
+        }
+    }
+    if (!bingo) {
+        myFavArray[myFavArray.length] = tagimInd;
+        myFavArray.sort(function(a, b){return a-b});
+        alert("Add this page successfully.")
     }
 }
 
-function onLoad() {
-    //debugger
-    //input.value = dirpath;
-    //window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
-    //window.requestFileSystem(window.TEMPORARY, 1024*1024, onInitFs, errorHandler);
-    $("canvas").off("onmousedown");
-    $("canvas").off("onmousemove");
-    $("canvas").off("onmouseup");
-    $("img").off("onload");
-    
-    i0.src = imgPath + "cover.jpg";
+function openMenu() {
+    omImg.style.display = "none";
+    rmenu.style.display = "block";
+    //alert("openMenu:"+rmenu.style.display);
+}
 
-    i0.onload = function () {
-        sA = handleResize(i0);
+function closeMenu() {
+    rmenu.style.display = "none";
+    omImg.style.display = "block";    
+}
+
+var isFullScreenMode = false, ziCnt=0;
+function fullScreen() {
+    console.log("Enter fullscreen()");
+    
+    if (document.fullscreenEnabled || 
+        document.webkitFullscreenEnabled || 
+        document.mozFullScreenEnabled ||
+        document.msFullscreenEnabled) 
+    {
+        $("body").off("onResize");
+
+        var id2fullscreen = "html", i = document.getElementById(id2fullscreen);
+        if (document.fullscreenElement ||
+            document.webkitFullscreenElement ||
+            document.mozFullScreenElement ||
+            document.msFullscreenElement)
+        {
+            // exit full-screen
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.mozCancelFullScreen) {
+                document.mozCancelFullScreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+            isFullScreenMode = false;
+        } else {
+            // go full-screen
+            if (i.requestFullscreen) {
+                i.requestFullscreen();
+            } else if (i.webkitRequestFullscreen) {
+                i.webkitRequestFullscreen();
+            } else if (i.mozRequestFullScreen) {
+                i.mozRequestFullScreen();
+            } else if (i.msRequestFullscreen) {
+                i.msRequestFullscreen();
+            }
+            isFullScreenMode = true;
+        }
+        //chk_zoomToMax();  // Do in onResize()
+    }
+}
+function chk_zoomToMax(){
+    if (isFullScreenMode) {
+        if (!isSafe2zoom) {
+            setTimeout(chk_zoomToMax, 100);
+        } else {
+            if ( ((sX+sA[0])<=(window.innerWidth-50))&&((sY+sA[1])<=(window.innerHeight-20)) ) {
+                bC.style.display = "none";
+                console.log((sX+sA[0])+","+window.innerWidth+","+(sY+sA[1])+","+window.innerHeight);
+                doZoom(true);
+                ziCnt++;
+                setTimeout(chk_zoomToMax, 100);
+            } else {
+                doZoom(true, true);
+                bC.style.display = "block";
+                //setTimeout(function(){ body.addEventListener("resize",onResize(true));}, 3000);
+            }
+        }
+    } else {
+        /*if (!isSafe2zoom) {
+            setTimeout(chk_zoomToMax, 100);
+        } else {
+            if ( ziCnt>0 ) {
+                console.log((sX+sA[0])+","+window.innerWidth+","+(sY+sA[1])+","+window.innerHeight);
+                doZoom(false);
+                ziCnt--;
+                setTimeout(chk_zoomToMax, 100);
+            } else {
+                //setTimeout(function(){ body.addEventListener("resize",onResize(true));}, 3000);
+            }
+        }*/
+    }
+}
+function myFavorites() {
+    var allitems = "";
+    for (i=0; i<myFavArray.length; i++) {
+        allitems += myFavArray[i] + ",";
+    }
+    console.log(allitems);
+    if (myFavArray.length==0) {
+        console.log("No Page in My Favoriates Yet.");
+        //return;
+    }
+    if (mfdiv.style.display != "none") {
+        mfdiv.style.display = "none";
+    } else {
+        createInnerHTMLofShowTags();
+        mfdiv.style.display = "block";
+    }
+    
+}
+function othersMenu() {
+    doSubLayout();
+}
+function doZoom(isIn, showAtLastCall) {
+    sw = window.innerWidth, sh = window.innerHeight;
+    var factor = sA[1]/sA[0], yShft = (zoomShft*factor);
+
+    if (isIn) {
+        sA[0] += zoomShft;
+        sA[1] += yShft;
+    } else {
+        if ((sA[0]<(sw/6))||(sA[1]<(sh/6))) {
+            return;
+        }
+        sA[0] -= zoomShft;
+        sA[1] -= (zoomShft*factor);
+    }
+    if (showAtLastCall) {
+        setRighPageOri(sw,sh);
+        onResize(false);
+    }
+}
+
+function setPosition(sw,sh) {
+    var imset = layoutDB[layoutIndex];
+    for (i = 0; i < allicons.length; i++) {
+        var se = allicons[i], ti, ts, th;
+        ts = rmenu.style.width;
+        tw = parseInt(ts.substring(0,ts.length-2))
+        se.style.position = "absolute";
+        if (se.className=="fsImg") {
+            se.style.top = (imset.iconTop)+"px";
+        } else if (se.className=="cmImg") {
+            se.style.top = (sh-se.height-10)+"px";
+            se.style.left = "5px";
+            continue;
+        } else if (se.className=="omImg") {
+            se.style.top = (sh-se.height-10)+"px";
+            se.style.left = (sw-se.width-5)+"px";
+            continue;
+        } else if ( (se.className=="ltImg")||(se.className=="rtImg") ) {
+            var tl = dz.style.top;
+            se.style.top = (parseInt(tl.substring(0,tl.length-2))+10)+"px";
+            tl = dz.style.left;
+            var dzw = dz.style.width, dzwi = parseInt(dzw.substring(0,dzw.length-2));
+            if (se.className=="ltImg") {
+                se.style.left = parseInt(tl.substring(0,tl.length-2))+dzwi+10+"px";
+            } else {
+                se.style.left = sw-(parseInt(tl.substring(0,tl.length-2))+dzwi+se.width+10)+"px";
+            }
+            se.disabled = true;          
+            continue;
+        } else {
+            ti = allicons[i-1];
+            ts = ti.style.top;
+            th = parseInt(ts.substring(0,ts.length-2))+ti.height;
+            se.style.top = Math.ceil(th+imset.iconYshft)+"px";        
+        }
+        se.style.left = ((tw-se.width)/2)+"px"; //se's parent is already set absolute; so not Math.ceil(sw-(th+se.width)/2)+"px";
+        //console.log(se.style.left+","+se.style.top);
+        //se.style.left = 500+"px";
+    }
+}
+
+function setRighPageOri(sw,sh) {
+    if (debugMode) {    // for debug;
+        sY = Math.floor(sh / 2 - sA[1] / 2.1); 
+        sX = Math.floor(sw / 2 - sA[0] / 1.5);
+    } else {
+        sY = Math.floor(sh / 2 - sA[1] / 2); 
+        sX = Math.floor(sw / 2);
+    }
+}
+
+function showBookViewer() {
+    var sw = window.innerWidth, sh = window.innerHeight;
+
+    //dZ = document.getElementById("dz_table");
+    //dZ.style["z-index"] = -99;
+
+    setRighPageOri(sw,sh);  //must be before doLayout since sY will be used in doLayout.
+    doLayout(sw,sh);
+    
+    console.log("(sw,sh)="+sw+","+sh+",(sX,sY)="+sX+","+sY);
+}
+
+function onResize(hResize) {
+        if (hResize) {
+            oLfunc();
+        } else {
+            oLfuncNohandleResize();
+        }
+        
+        if (imInd >= 0) {
+            allpl[0].width = allpl[0].width; 
+            var ctx2 = allpl[0].getContext('2d');
+            var pe = [sX+sA[0],sY+sA[1]];
+            var p1 = [sX, sY];
+            ctx2.drawImage(allpi[imInd%allpi.length], sX, sY, sA[0], sA[1]);
+            if (imInd>0) {
+                ctx2.drawImage(allpi[(imInd-1)%allpi.length], sX-sA[0], sY, sA[0], sA[1]);
+            }
+            if ( (imInd > 0) && (imInd < (imCnt-1)) ) {
+                ctx2.beginPath();
+                ctx2.moveTo(sX-sA[0], pe[1]);
+                ctx2.lineTo(sX, pe[1]);
+                ctx2.lineTo(sX, sY);
+                ctx2.lineTo(sX-sA[0], sY);
+                ctx2.closePath();
+                ctx2.strokeStyle = tPbrdercolor;
+                ctx2.stroke();
+                ctx2.beginPath();
+                ctx2.moveTo(pe[0], pe[1]);
+                ctx2.lineTo(sX, pe[1]);
+                ctx2.lineTo(sX, sY);
+                ctx2.lineTo(pe[0], sY);
+                ctx2.closePath();
+                ctx2.stroke();    
+                doPaintShadow(ctx2, p1, [shaCfg.spw, sY], [shaCfg.spw, pe[1]], [sX, pe[1]]);
+            }
+            if ( (imInd+1) < imCnt) {
+                var ctx2 = allpl[1].getContext('2d');
+                ctx2.drawImage(allpi[(imInd+1)%allpi.length], sX, sY, sA[0], sA[1]);
+            }        
+            if ( (imInd+2) < imCnt) {
+                var ctx2 = allpl[2].getContext('2d');
+                ctx2.drawImage(allpi[(imInd+2)%allpi.length], sX, sY, sA[0], sA[1]);
+            }        
+        }
+        handleRpgN2();
+
+        chkMenuDisplay();
+
+        if (hResize && isFullScreenMode) {  // for closing the print window in print function of rrmenu.
+            chk_zoomToMax();
+        }
+}
+
+function chkMenuDisplay() {
+    var tDB = layoutDB[layoutIndex];
+    var tDB2 = sublayoutDB[layoutIndex];
+    var impath1 = tDB.path;
+    var impath2 = tDB2.path;
+
+    if (rmenu.style.display != "none") {
+        rmenu.style.backgroundColor = tDB.rMenuBgcolor;
+    }
+    if (rrmenu.style.display != "none") {
+        rrmenu.style.backgroundColor = tDB.rMenuBgcolor;
+    }
+    if (ctdiv.style.display != "none") {
+        ctdiv.style.backgroundImage = "url('"+ impath2 + tDB2.chThemeBgImg +"')";
+    }
+    if (mfdiv.style.display != "none") {
+        mfdiv.style.backgroundImage = "url('"+ impath2 + tDB2.stbgImg +"')";
+    }
+
+}
+
+function Maximize() 
+{
+    window.innerWidth = screen.width;
+    window.innerHeight = screen.height;
+    window.screenX = 0;
+    window.screenY = 0;
+    alwaysLowered = false;
+}
+
+function oLfuncNohandleResize() {
         showBookViewer();
 
         shaCfg.spw = 50; //Math.floor(sA[0] * shaCfg.widPer);
@@ -97,6 +899,37 @@ function onLoad() {
 
         canPos.c_b = [sX, sY, sA[0], sA[1]];
         canPos.pgs = [sX + (sA[0] - sA[2]) / 2, sY + (sA[1] - sA[3]) / 2, sA[2], sA[3]];
+}
+
+function oLfunc() {
+        sA = handleResize(i0);
+        oLfuncNohandleResize();
+}
+
+var dropZone;
+var demoMode = false;
+function onLoad() {
+    //Maximize();
+    //debugger
+    //input.value = dirpath;
+    //window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
+    //window.requestFileSystem(window.TEMPORARY, 1024*1024, onInitFs, errorHandler);
+    $("canvas").off("onmousedown");
+    $("canvas").off("onmousemove");
+    $("canvas").off("onmouseup");
+    $("img").off("onload");
+    
+    if (demoMode) {
+    	i0.src = imgPath + "cover.jpg";
+
+    } else {    
+        // Setup the dnd listeners.
+        dropZone = document.getElementById('drop_zone');
+        dropZone.addEventListener('dragover', handleDragOver, false);
+        dropZone.addEventListener('drop', handleFileSelect, false); 
+    }
+    i0.onload = function () {
+        oLfunc();
 
         var ctx2 = allpl[0].getContext('2d');
         //ctx2.drawImage(c0, sX-shaCfg.spw, sY, sA[0]+shaCfg.spw, sA[1]);
@@ -116,21 +949,41 @@ function onLoad() {
       iLA[i] = -1;
     }
 
-    if (0) {
-        c1.src = imgPath + "1.jpg";
-        c1.onload = function () {
-            var ctx2 = nC.getContext('2d');
-            ctx2.drawImage(c1, sX, sY, sA[0], sA[1]);
-
-            p0.src = imgPath + "2.jpg";
-            p0.onload = function () {
-                var ctx2 = pl0.getContext('2d');
-                ctx2.drawImage(p0, sX, sY, sA[0], sA[1]);
-            }
+    if (demoMode) {
+    	getImgArray2();
+        cImg.style.display = "none";
+        ltImg.style.display = "block";
+        rtImg.style.display = "block";
+        myFavArray = [0,1,2,3,5,7,9,11,12,13,15,17,19];
+    } else {
+    	doLayout(window.innerWidth,window.innerHeight);
+    }
+    for (i=0; i<layoutDB.length; i++) {
+        if (i >= sublayoutDB.length) {
+            sublayoutDB[i] = sublayoutDB[i-1];
         }
-
     }
 };
+
+function getImgArray2() {
+    /*var tnArray = ["cover.jpg", "1.jpg", "2.jpg", "3.jpg", "4.jpg", "back"];*/
+    var tnArray = ["cover.jpg", "1.jpg", "2.jpg", "3.jpg", "4.jpg", "5", "6", "7", "8", "9", "10",
+        "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22", "23", "24", "25", 
+        "26", "27", "28", "29", "30", "back"];
+    //debugger;
+
+    biA = tnArray;
+
+    imCnt = biA.length;
+    //bcimg.src = imgPath + biA[0];
+    //pgc.innerHTML = imCnt + " images.";
+    //output.style["visibility"] = "visible";
+    
+    isImgArrayLoaded = true;
+    //debugger;
+    //var url1 = window.URL.createObjectURL(files[0]);               
+    //fp.innerHTML = "img/"; //url1.substring(0,url1.lastIndexOf("/"));    
+}
 
 function addOnLoad() {
     if (isImgArrayLoaded) {
@@ -181,7 +1034,7 @@ function addOnLoad() {
                 );                
             }
         }
-        clearTimeout(i0loadedti);
+        clearInterval(i0loadedti);
     }
 }
 
@@ -251,9 +1104,9 @@ function getImgArray(files) {
     biA = tnArray;
 
     imCnt = biA.length;
-    bcimg.src = imgPath + biA[0];
-    pgc.innerHTML = imCnt + " images.";
-    output.style["visibility"] = "visible";
+    //bcimg.src = imgPath + biA[0];
+    //pgc.innerHTML = imCnt + " images.";
+    //output.style["visibility"] = "visible";
     
     isImgArrayLoaded = true;
     //debugger;
@@ -262,8 +1115,8 @@ function getImgArray(files) {
 }
 
 function update_imInd(x, y) {
-    document.getElementById("imInd").innerHTML = "imInd: " + imInd + ", x,y: (" + x + "," + y + ")";
-    console.log("Line727: imInd=" + imInd);
+    /*document.getElementById("imInd").innerHTML = "imInd: " + imInd + ", x,y: (" + x + "," + y + ")";
+    console.log("Line727: imInd=" + imInd);*/
 }
 
 function chk_LoR_page_adj_pgInd(x, y, id) {
@@ -311,6 +1164,8 @@ function handlevisibility(pgInd) {
 }
 
 function handleFileSelect(evt) {
+    i0.src = imgPath + "cover.jpg";
+    
     evt.stopPropagation();
     evt.preventDefault();
 
@@ -318,6 +1173,10 @@ function handleFileSelect(evt) {
 
     getImgArray(files);
     showBookViewer();
+
+    ltImg.style.display = "block";
+    rtImg.style.display = "block";
+    cImg.style.display = "none";
 
     // files is a FileList of File objects. List some properties.
     /*var output = [];
@@ -335,11 +1194,6 @@ function handleDragOver(evt) {
     evt.preventDefault();
     evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
 }
-
-// Setup the dnd listeners.
-var dropZone = document.getElementById('drop_zone');
-dropZone.addEventListener('dragover', handleDragOver, false);
-dropZone.addEventListener('drop', handleFileSelect, false); 
 
 // Book Logic=======================================================================================
 var choose = document.getElementById("choose"),
@@ -383,6 +1237,29 @@ var isOnLpg_d, isOnRpg_d, isOnLpg_u, isOnRpg_u;
 var dX, dY;
 var lastImg = i5; 
 var tAsC = 10;
+
+function handleRpgN2() {
+    if (imInd <= (biA.length-3)) {
+        nniInd = ( (imInd+2) % allpi.length);
+        allpi[nniInd].src = imgPath + biA[imInd+2];
+        iLA[nniInd] = 1; //isLoadRpg
+    }
+    if (imInd <= (biA.length-2)) {
+        niInd = ( (imInd+1) % allpi.length);
+        allpi[niInd].src = imgPath + biA[imInd+1];  
+        iLA[niInd] = 1; //isLoadRpg
+    }
+    //isLoadRpg = true; isLoadLpg = false;
+
+    ctx = allpl[1].getContext('2d');
+    if ((imInd-2)>=0) {
+        ctx.drawImage(allpi[(imInd-2) % allpi.length], sX-sA[0], sY, sA[0], sA[1]); 
+    }
+    ctx2 = allpl[2].getContext('2d');
+    if ((imInd-3)>=0) {
+        ctx2.drawImage(allpi[(imInd-3) % allpi.length], sX-sA[0], sY, sA[0], sA[1]);  
+    }      
+}
 
 function doShowPageByInterval(curX, curY, tarX, tarY, timeItvl, shrinkDis, midX, midY) {
     // Animation Line: Y - dP[1] = (cy-dP[1])/(cx-dP[0]) * (X - dp[0]);
@@ -443,29 +1320,12 @@ function doShowPageByInterval(curX, curY, tarX, tarY, timeItvl, shrinkDis, midX,
             ctx2.drawImage(allpi[(imInd+2) % allpi.length], sX, sY, sA[0], sA[1]);
         } else if ( isOnRpg_d && ((mouseState=="02")||((mouseState=="012")&&(isOnLpg_u))) ) {
             imInd += 2;
-            if (imInd <= (biA.length-3)) {
-              nniInd = ( (imInd+2) % allpi.length);
-              allpi[nniInd].src = imgPath + biA[imInd+2];
-              iLA[nniInd] = 1; //isLoadRpg
-            }
-            if (imInd <= (biA.length-2)) {
-              niInd = ( (imInd+1) % allpi.length);
-              allpi[niInd].src = imgPath + biA[imInd+1];  
-              iLA[niInd] = 1; //isLoadRpg
-            }
-            //isLoadRpg = true; isLoadLpg = false;
-            ctx = allpl[1].getContext('2d');
-            if ((imInd-2)>=0) {
-              ctx.drawImage(allpi[(imInd-2) % allpi.length], sX-sA[0], sY, sA[0], sA[1]); 
-            }
-            ctx2 = allpl[2].getContext('2d');
-            if ((imInd-3)>=0) {
-              ctx2.drawImage(allpi[(imInd-3) % allpi.length], sX-sA[0], sY, sA[0], sA[1]);  
-            }            
+            
+            handleRpgN2();       
         }
         console.log("end of action: imIaft="+imInd+",mS="+mouseState+",OLd="+isOnLpg_d+",ORd="+isOnRpg_d+",OLu="+isOnLpg_u+",ORu="+isOnRpg_u);
         isOnLpg_d = isOnLpg_u = isOnRpg_d = isOnRpg_u = mouseState = null;
-        update_imInd(tarX, tarY);
+        //update_imInd(tarX, tarY);
     }
 }
 
@@ -581,7 +1441,13 @@ function slideFromA2B(isOLu, isORu, uX, uY) {
       } else if (isORu) {
         dP = [sX + sA[0], sY + sA[1]];
       } else {
-        dP = (uX < sX) ? ([sX - sA[0], sY + sA[1]]) : ([sX + sA[0], sY + sA[1]]);
+        if (uX < sX) {
+            dP = [sX - sA[0], sY + sA[1]];
+            isOnLpg_u = true;    
+        } else {
+            dP = [sX + sA[0], sY + sA[1]];
+            isOnRpg_u = true;
+        }
       }
       setTimeout(doShowPageByInterval, showItvl, uX, uY, dP[0], dP[1], showItvl, 1 / 2);              
 }
@@ -743,6 +1609,9 @@ function doPagePositionByMouseCorRpg(ofsX, ofsY) {
       doSP(ofsX, ofsY);
       return;
     }
+    if (!( (isValid[0]&&isValid[1]) || (isValid[1]&&isValid[3]) || (!(isValid[0]||isValid[1]||isValid[2]||isValid[3])) )) {    //prevent sudden disappear
+        return;
+    }
     bC.width = bC.width;  // **Trick to clear canvas.
     ctx2.drawImage(allpi[riInd], sX, sY, sA[0], sA[1]);
     if (liInd != null) {
@@ -763,13 +1632,14 @@ function doPagePositionByMouseCorRpg(ofsX, ofsY) {
       ctx2.lineTo(sX, sY);
       ctx2.lineTo(pe[0], sY);
       ctx2.closePath();
-      ctx2.stroke();    
+      ctx2.stroke();
+
       doPaintShadow(ctx2, p1, [shaCfg.spw, sY], [shaCfg.spw, pe[1]], [sX, pe[1]]);
     }
                 
     var dif, dif2, p2, p3, p4;
     var l4 = Math.sqrt(Math.pow(cp[0] - pe[0], 2) + Math.pow(cp[1] - pe[1], 2)) >> 1;
-    if ( isValid[1] && isValid[3] ) {        
+    if ( isValid[1] && isValid[3] ) {
         l1 = Math.sqrt(Math.pow(pbOnBotX - cp[0], 2) + Math.pow(pe[1] - cp[1], 2));
         l2 = Math.sqrt(Math.pow(pe[0] - cp[0], 2) + Math.pow(pbOnRigY - cp[1], 2));
         ctx2.beginPath();
@@ -779,16 +1649,23 @@ function doPagePositionByMouseCorRpg(ofsX, ofsY) {
           ctx2.lineTo(pe[0], pe[1] - l2);
           ctx2.fillStyle = ctx2.createPattern(nnC, "no-repeat");
           ctx2.strokeStyle = tPbrdercolor;                    
+          ctx2.closePath();
+          ctx2.fill();
+          ctx2.stroke();
         } else {
-          ctx2.moveTo(pe[0]+1, pe[1]+1);
-          ctx2.lineTo(pe[0] - l1, pe[1]);
-          ctx2.lineTo(pe[0]+1, pe[1] - l2);
-          ctx2.fillStyle = bgcolor;
-          ctx2.strokeStyle = bgcolor;
+            if (bIpath != null) {
+                clearGraduallyRpg(ctx2, 0, l1, l2);
+            } else {
+                ctx2.moveTo(pe[0]+1, pe[1]+1);
+                ctx2.lineTo(pe[0] - l1, pe[1]);
+                ctx2.lineTo(pe[0]+1, pe[1] - l2);
+                ctx2.fillStyle = bgcolor;
+                ctx2.strokeStyle = bgcolor;
+                ctx2.closePath();
+                ctx2.fill();
+                ctx2.stroke();                
+            }
         }
-        ctx2.closePath();
-        ctx2.fill();
-        ctx2.stroke();
         
         degb = Math.atan((pe[0] - pbOnBotX) / (pe[1] - pbOnRigY)); //a value between -PI/2 and PI/2 radians.
         ctx2.translate(cp[0], cp[1]);
@@ -826,17 +1703,24 @@ function doPagePositionByMouseCorRpg(ofsX, ofsY) {
                 ctx2.lineTo(pe[0], sY);
                 ctx2.fillStyle = ctx2.createPattern(nnC, "no-repeat");
                 ctx2.strokeStyle = tPbrdercolor;
+                ctx2.closePath();
+                ctx2.fill();
+                ctx2.stroke();
             } else {
-                ctx2.moveTo(pe[0] + 1, pe[1] +1);
-                ctx2.lineTo(pbOnBotX, pe[1] + 1);
-                ctx2.lineTo(pbOnTopX, sY - 1);
-                ctx2.lineTo(pe[0] + 1, sY - 1);
-                ctx2.fillStyle = bgcolor;
-                ctx2.strokeStyle = bgcolor;
+                if (bIpath != null) {
+                    clearGraduallyRpg(ctx2, 1, (pe[0]-pbOnTopX), (pe[0]-pbOnBotX));
+                } else {
+                    ctx2.moveTo(pe[0] + 1, pe[1] +1);
+                    ctx2.lineTo(pbOnBotX, pe[1] + 1);
+                    ctx2.lineTo(pbOnTopX, sY - 1);
+                    ctx2.lineTo(pe[0] + 1, sY - 1);
+                    ctx2.fillStyle = bgcolor;
+                    ctx2.strokeStyle = bgcolor;
+                    ctx2.closePath();
+                    ctx2.fill();
+                    ctx2.stroke();
+                }
             }
-            ctx2.closePath();
-            ctx2.fill();
-            ctx2.stroke();
 
             ctx2.translate(cp[0], cp[1]);
             ts = Math.sqrt(Math.pow(pbOnBotX - pbOnTopX, 2) + Math.pow(sA[1], 2));
@@ -882,17 +1766,24 @@ function doPagePositionByMouseCorRpg(ofsX, ofsY) {
                 ctx2.lineTo(pe[0], sY);
                 ctx2.fillStyle = ctx2.createPattern(nnC, "no-repeat");
                 ctx2.strokeStyle = tPbrdercolor;
+                ctx2.closePath();
+                ctx2.fill();
+                ctx2.stroke();
             } else {
-                ctx2.moveTo(pe[0]+1, pe[1]+1);
-                ctx2.lineTo(pe[0]-l1,pe[1]+1);
-                ctx2.lineTo(pbOnTopX-1, sY-1);
-                ctx2.lineTo(pe[0]+1, sY-1);
-                ctx2.fillStyle=bgcolor;
-                ctx2.strokeStyle = bgcolor;
+                if (bIpath != null) {
+                    clearGraduallyRpg(ctx2, 1, (pe[0]-pbOnTopX), (pe[0]-pbOnBotX));
+                } else {                
+                    ctx2.moveTo(pe[0]+1, pe[1]+1);
+                    ctx2.lineTo(pe[0]-l1,pe[1]+1);
+                    ctx2.lineTo(pbOnTopX-1, sY-1);
+                    ctx2.lineTo(pe[0]+1, sY-1);
+                    ctx2.fillStyle=bgcolor;
+                    ctx2.strokeStyle = bgcolor;
+                    ctx2.closePath();
+                    ctx2.fill();
+                    ctx2.stroke();
+                }
             }
-            ctx2.closePath();
-            ctx2.fill();
-            ctx2.stroke();
 
             degb = Math.atan((pe[0] - pbOnBotX) / (pe[1] - pbOnRigY)); //a value between -PI/2 and PI/2 radians.
             ctx2.translate(cp[0], cp[1]);
@@ -931,6 +1822,115 @@ function doPagePositionByMouseCorRpg(ofsX, ofsY) {
     p4 = [sX, sY + l3];
     if ( (imInd<(imCnt-2))||( (imInd==(imCnt-2))&&(ofsX>(sX-sA[0])) ) ) {
         doPaintShadow(ctx2, p1, p2, p3, p4);    
+    }
+}
+
+function clearGraduallyRpg(ctx, sce, l1, l2) {
+    if (sce == 0) {
+        var tv = Math.tan(Math.atan(l2/l1));
+        var stepx = l1/20, cnt = 0, stepx2=1;        
+        var stepy = tv*stepx, stepy2 = tv*stepx2;
+        if (stepx < 1) {
+            stepx = 1;
+        }
+        tstepx = stepx2; tstepy = stepy2;
+        for (i=sX+sA[0]+tstepx,j=sY+sA[1]-l2-1; i>=(sX+sA[0]-l1-stepx);) {
+            i-=tstepx;
+
+            ctx.clearRect(i,j,tstepx,l2+stepy);
+
+            /*ctx.moveTo(i,j);
+            ctx.lineTo(i,j+l2+stepy);
+            ctx.lineTo(i+tstepx,j+l2+stepy);
+            ctx.lineTo(i+tstepx,j);
+            ctx.closePath;            
+            ctx.strokeStyle = "red";
+            ctx.stroke();*/
+
+            j+=tstepy;
+            if (cnt <= 10) {
+                if (cnt == 9) {
+                    tstepx = stepx;
+                    tstepy = stepy;
+                }
+            } else {
+                if (i<(sX+sA[0]-l1+(2*tstepx))) {
+                    tstepx = stepx2;
+                    tstepy = stepy2;
+                }                
+            }
+            cnt++;    
+        }
+    } else if (sce == 1) {
+        var sp=l1, ep=l2;
+        if (l1 >= l2) {
+            sp = l2;
+            ep = l1;
+        }
+        ctx.clearRect(sX+sA[0]+1-sp,sY-1,sp+2,sA[1]+2);
+        if (ep != sp) {
+            var stepx = (ep-sp)/40;
+            var stepy = Math.tan(Math.atan(sA[1]/(ep-sp)))*stepx;
+            if (l1 >= l2) {
+                for (i=sp,j=0; i<=(ep+stepx); i+=stepx,j+=stepy) {
+                    ctx.clearRect(sX+sA[0]-i,sY-1,stepx,sA[1]-j+stepy);
+                }
+            } else {
+                for (i=sp-1,j=0; i<=(ep+stepx); j+=stepy) {
+                    i+=stepx;
+                    ctx.clearRect(sX+sA[0]-i,sY+j,stepx,sA[1]-j+stepy);
+                }
+            }
+        }
+    }
+}
+
+function clearGraduallyLpg(ctx, sce, l1, l2) {
+    if (sce == 0) {
+        var tv = Math.tan(Math.atan(l2/l1));
+        var stepx = l1/20, cnt = 0, stepx2=1;        
+        var stepy = tv*stepx, stepy2 = tv*stepx2;
+        if (stepx < 1) {
+            stepx = 1;
+        }
+        tstepx = stepx2; tstepy = stepy2;
+        for (i=-1,j=sY+sA[1]-l2-1; i<=(l1+stepx);) {
+            ctx.clearRect(sX-sA[0]+i,j,tstepx,l2+stepy);
+            i+=tstepx;
+            j+=tstepy;            
+            if (cnt <= 10) {
+                if (cnt == 9) {
+                    tstepx = stepx;
+                    tstepy = stepy;
+                }
+            } else {
+                if (i>(l1-(2*tstepx))) {
+                    tstepx = stepx2;
+                    tstepy = stepy2;
+                }                
+            }
+            cnt++;            
+        }
+    } else if (sce == 1) {
+        var sp=l1, ep=l2;
+        if (l1 >= l2) {
+            sp = l2;
+            ep = l1;
+        }
+        ctx.clearRect(sX-sA[0]-1,sY-1,sp+2,sA[1]+2);
+        if (ep != sp) {
+            var stepx = (ep-sp)/40;
+            var stepy = Math.tan(Math.atan(sA[1]/(ep-sp)))*stepx;
+            if (l1 >= l2) {
+                for (i=sp,j=0; i<=(ep+stepx); i+=stepx,j+=stepy) {
+                    ctx.clearRect(sX-sA[0]+i,sY-1,stepx,sA[1]-j+stepy);
+                }
+            } else {
+                for (i=sp,j=-1; i<=(ep+stepx); i+=stepx,j+=stepy) {
+                    ctx.clearRect(sX-sA[0]+i,sY+j,stepx,sA[1]-j+stepy);
+                }
+            }
+        }
     }
 }
 
@@ -979,6 +1979,9 @@ function doPagePositionByMouseCorLpg(ofsX, ofsY) {
       doSP(ofsX, ofsY);
       return;
     }
+    if (!( (isValid[0]&&isValid[1]) || (isValid[1]&&isValid[3]) || (!(isValid[0]||isValid[1]||isValid[2]||isValid[3])) )) {    //prevent sudden disappear
+        return;
+    }
     
     bC.width = bC.width;  // **Trick to clear canvas.
     if (riInd != null) {
@@ -1015,17 +2018,24 @@ function doPagePositionByMouseCorLpg(ofsX, ofsY) {
           ctx2.lineTo(pe[0] + l1, pe[1]);
           ctx2.lineTo(pe[0], pe[1] - l2);
           ctx2.fillStyle = ctx2.createPattern(nnC, "no-repeat");
-          ctx2.strokeStyle = tPbrdercolor;                    
+          ctx2.strokeStyle = tPbrdercolor;
+          ctx2.closePath();
+          ctx2.fill();
+          ctx2.stroke();                    
         } else {
-          ctx2.moveTo(pe[0]-1, pe[1]+1);
-          ctx2.lineTo(pe[0] + l1, pe[1]+1);
-          ctx2.lineTo(pe[0]-1, pe[1]-l2);
-          ctx2.fillStyle = bgcolor;
-          ctx2.strokeStyle = bgcolor;
+            if (bIpath != null) {
+                clearGraduallyLpg(ctx2, 0, l1, l2);
+            } else {
+                ctx2.moveTo(pe[0]-1, pe[1]+1);
+                ctx2.lineTo(pe[0] + l1, pe[1]+1);
+                ctx2.lineTo(pe[0]-1, pe[1]-l2);
+                ctx2.fillStyle = bgcolor;
+                ctx2.strokeStyle = bgcolor;
+                ctx2.closePath();
+                ctx2.fill();
+                ctx2.stroke();                
+            }
         }
-        ctx2.closePath();
-        ctx2.fill();
-        ctx2.stroke();
         
         degb = Math.atan((pe[0] - pbOnBotX) / (pe[1] - pbOnRigY)); //a value between -PI/2 and PI/2 radians.
         ctx2.translate(cp[0], cp[1]);
@@ -1063,17 +2073,24 @@ function doPagePositionByMouseCorLpg(ofsX, ofsY) {
                 ctx2.lineTo(pe[0], sY);
                 ctx2.fillStyle = ctx2.createPattern(nnC, "no-repeat");
                 ctx2.strokeStyle = tPbrdercolor;
+                ctx2.closePath();
+                ctx2.fill();
+                ctx2.stroke();                
             } else {
-                ctx2.moveTo(pe[0] - 1, pe[1] +1);
-                ctx2.lineTo(pbOnBotX, pe[1] + 1);
-                ctx2.lineTo(pbOnTopX, sY - 1);
-                ctx2.lineTo(pe[0] - 1, sY - 1);
-                ctx2.fillStyle = bgcolor;
-                ctx2.strokeStyle = bgcolor;
+                if (bIpath != null) {
+                    clearGraduallyLpg(ctx2, 1, pbOnTopX-pe[0], pbOnBotX-pe[0]);
+                } else {
+                    ctx2.moveTo(pe[0] - 1, pe[1] +1);
+                    ctx2.lineTo(pbOnBotX, pe[1] + 1);
+                    ctx2.lineTo(pbOnTopX, sY - 1);
+                    ctx2.lineTo(pe[0] - 1, sY - 1);
+                    ctx2.fillStyle = bgcolor;
+                    ctx2.strokeStyle = bgcolor;
+                    ctx2.closePath();
+                    ctx2.fill();
+                    ctx2.stroke();                    
+                }
             }
-            ctx2.closePath();
-            ctx2.fill();
-            ctx2.stroke();
 
             ctx2.translate(cp[0], cp[1]);
             ts = Math.sqrt(Math.pow(pbOnBotX - pbOnTopX, 2) + Math.pow(sA[1], 2));
@@ -1119,17 +2136,24 @@ function doPagePositionByMouseCorLpg(ofsX, ofsY) {
                 ctx2.lineTo(pe[0], sY);
                 ctx2.fillStyle = ctx2.createPattern(nnC, "no-repeat");
                 ctx2.strokeStyle = tPbrdercolor;
+                ctx2.closePath();
+                ctx2.fill();
+                ctx2.stroke();                
             } else {
-                ctx2.moveTo(pe[0]-1, pe[1]+1);
-                ctx2.lineTo(pe[0]+l1,pe[1]+1);
-                ctx2.lineTo(pbOnTopX+1, sY-1);
-                ctx2.lineTo(pe[0]-1, sY-1);
-                ctx2.fillStyle=bgcolor;
-                ctx2.strokeStyle = bgcolor;
+                if (bIpath != null) {
+                    clearGraduallyLpg(ctx2, 1, pbOnTopX-pe[0], pbOnBotX-pe[0]);
+                } else {
+                    ctx2.moveTo(pe[0]-1, pe[1]+1);
+                    ctx2.lineTo(pe[0]+l1,pe[1]+1);
+                    ctx2.lineTo(pbOnTopX+1, sY-1);
+                    ctx2.lineTo(pe[0]-1, sY-1);
+                    ctx2.fillStyle=bgcolor;
+                    ctx2.strokeStyle = bgcolor;
+                    ctx2.closePath();
+                    ctx2.fill();
+                    ctx2.stroke();                    
+                }
             }
-            ctx2.closePath();
-            ctx2.fill();
-            ctx2.stroke();
 
             degb = Math.atan((pe[0] - pbOnBotX) / (pe[1] - pbOnRigY)); //a value between -PI/2 and PI/2 radians.
             ctx2.translate(cp[0], cp[1]);
